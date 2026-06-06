@@ -41,4 +41,12 @@ export function getTodayDateString(): string {
   return `${year}-${month}-${day}`;
 }
 
-
+/**
+ * Checks if the app is running as an installed PWA or in browser
+ */
+export const isRunningAsPWA = (): boolean => {
+  if (typeof window === "undefined") return false;
+  const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+  const isIOSStandalone = ("standalone" in window.navigator) && (window.navigator as any).standalone;
+  return isStandalone || !!isIOSStandalone;
+};

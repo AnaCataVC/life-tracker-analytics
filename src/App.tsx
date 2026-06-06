@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { LogEntry, EnabledTrackers } from "./types";
-import { getTodayDateString, getTotalSleep } from "./utils/helpers";
+import { getTodayDateString, getTotalSleep, isRunningAsPWA } from "./utils/helpers";
 import TrackingForm from "./components/TrackingForm";
 import AnalyticsCharts from "./components/AnalyticsCharts";
 import LocalInsights from "./components/LocalInsights";
@@ -125,6 +125,10 @@ export default function App() {
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [showSheetsConfig, setShowSheetsConfig] = useState<boolean>(false);
 
+  // PWA state variables
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isPWA, setIsPWA] = useState<boolean>(false);
+
   // Dynamic user profile fetching helper
   const fetchUserProfile = async (token: string) => {
     try {
@@ -221,6 +225,31 @@ export default function App() {
       } catch (e) {}
     }
   }, []);
+
+  // Check PWA and handle install prompt
+  useEffect(() => {
+    setIsPWA(isRunningAsPWA());
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === "accepted") {
+      setDeferredPrompt(null);
+    }
+  };
 
   // Quick notifier trigger helper
   const triggerToast = (msg: string) => {
@@ -675,6 +704,31 @@ export default function App() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         
+        {/* PWA INSTALL BANNER */}
+        {!isPWA && deferredPrompt && (
+          <div className="bg-gradient-to-r from-indigo-600 to-indigo-800 text-white p-4 rounded-2xl flex items-center justify-between shadow-lg mb-4 animate-fade-in">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <Download className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-bold font-sans">
+                  {lang === "es" ? "Instala la aplicación" : "Install the app"}
+                </p>
+                <p className="text-xs text-indigo-100 font-sans mt-0.5">
+                  {lang === "es" ? "Acceso rápido y experiencia sin conexión." : "Quick access and better offline experience."}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleInstallClick}
+              className="px-4 py-2 bg-white text-indigo-700 text-xs font-bold rounded-xl shadow-sm hover:bg-indigo-50 transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              <span>{lang === "es" ? "Instalar" : "Install"}</span>
+            </button>
+          </div>
+        )}
+
         {/* TOAST SYSTEM ALERTS */}
         {toastMessage && (
           <div className="fixed bottom-24 right-5 z-50 bg-indigo-900 text-slate-100 px-4 py-3 rounded-lg text-xs font-sans shadow-lg flex items-center justify-between border border-indigo-950 animate-bounce">

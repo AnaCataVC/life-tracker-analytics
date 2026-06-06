@@ -14,7 +14,7 @@ export interface MedicationItem {
 export interface LogEntry {
   date: string; // ISO date string YYYY-MM-DD
   mood: number; // 1-10
-  moodNotes: string;
+
   moodTags: string[]; // ['happy', 'anxious', 'tired', 'calm', etc.]
   sleepQuality: number; // 1-10
   bedtime: string; // "HH:MM" e.g. "23:00"

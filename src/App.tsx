@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { LogEntry, EnabledTrackers } from "./types";
-import { getSampleHistory, getTodayDateString, getTotalSleep } from "./utils/helpers";
+import { getTodayDateString, getTotalSleep } from "./utils/helpers";
 import TrackingForm from "./components/TrackingForm";
 import AnalyticsCharts from "./components/AnalyticsCharts";
 import LocalInsights from "./components/LocalInsights";
@@ -8,7 +8,8 @@ import { translations } from "./utils/translations";
 import { 
   loginGoogleDrive,
   backupToDrive, 
-  restoreFromDrive 
+  restoreFromDrive,
+  BackupData
 } from "./utils/googleDrive";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "./utils/db";
@@ -258,7 +259,20 @@ export default function App() {
     
     setIsSyncing(true);
     try {
-      await backupToDrive(googleToken, logsToSync);
+      const backupData: BackupData = {
+        version: 2,
+        logs: logsToSync,
+        templates: {
+          medications: medicationTemplate,
+          habits: habitsTemplate
+        },
+        config: {
+          theme,
+          enabledTrackers,
+          appLang: lang
+        }
+      };
+      await backupToDrive(googleToken, backupData);
       triggerToast(lang === "es" ? "¡Respaldo guardado en Google Drive! 🚀" : "Backup uploaded to Google Drive! 🚀");
     } catch (err: any) {
       console.error(err);
@@ -283,8 +297,28 @@ export default function App() {
       setIsSyncing(true);
       try {
         const pulled = await restoreFromDrive(googleToken);
-        await db.logs.bulkPut(pulled);
-        triggerToast(lang === "es" ? `¡Se recuperaron ${pulled.length} registros! 📥` : `Successfully recovered ${pulled.length} logs! 📥`);
+        const backupData = pulled as BackupData;
+        
+        if (backupData.logs) await db.logs.bulkPut(backupData.logs);
+        
+        if (backupData.templates) {
+          if (backupData.templates.medications) {
+            setMedicationTemplate(backupData.templates.medications);
+            localStorage.setItem("wellbeing_meds_template", JSON.stringify(backupData.templates.medications));
+          }
+          if (backupData.templates.habits) {
+            setHabitsTemplate(backupData.templates.habits);
+            localStorage.setItem("wellbeing_habits_template", JSON.stringify(backupData.templates.habits));
+          }
+        }
+        
+        if (backupData.config) {
+          if (backupData.config.theme) setTheme(backupData.config.theme as "light" | "dark");
+          if (backupData.config.enabledTrackers) setEnabledTrackers(backupData.config.enabledTrackers);
+          if (backupData.config.appLang) setLang(backupData.config.appLang as "en" | "es");
+        }
+
+        triggerToast(lang === "es" ? `¡Se recuperaron ${backupData.logs.length} registros y configuración! 📥` : `Successfully recovered ${backupData.logs.length} logs and config! 📥`);
       } catch (err: any) {
         console.error(err);
         if (err.message?.includes("401") || err.message?.includes("unauthorized") || err.message?.includes("expired")) {
@@ -337,7 +371,20 @@ export default function App() {
       setIsSyncing(true);
       try {
         const currentLogs = await db.logs.toArray();
-        await backupToDrive(googleToken, currentLogs);
+        const backupData: BackupData = {
+          version: 2,
+          logs: currentLogs,
+          templates: {
+            medications: medicationTemplate,
+            habits: habitsTemplate
+          },
+          config: {
+            theme,
+            enabledTrackers,
+            appLang: lang
+          }
+        };
+        await backupToDrive(googleToken, backupData);
         triggerToast(lang === "es" 
           ? "🔄 ¡Respaldo automático en Google Drive!" 
           : "🔄 Automatically backed up to Google Drive!"
@@ -443,7 +490,6 @@ export default function App() {
       const defaultToday: LogEntry = {
         date: today,
         mood: 7,
-        moodNotes: lang === "es" ? `Comprometido con nuevo hábito local: ${habitName}` : `Committed to new custom local routine: ${habitName}`,
         moodTags: ["calm"],
         sleepQuality: 7,
         bedtime: "22:30",

@@ -1,5 +1,19 @@
 import { LogEntry } from "../types";
 
+export interface BackupData {
+  version: number;
+  logs: LogEntry[];
+  templates?: {
+    medications: { name: string; dosage: string }[];
+    habits: { name: string }[];
+  };
+  config?: {
+    theme: string;
+    enabledTrackers: any;
+    appLang: string;
+  };
+}
+
 export const GOOGLE_CLIENT_ID = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || "";
 
 // Define the global google variable injected by the GIS script
@@ -60,8 +74,8 @@ async function findBackupFileId(token: string): Promise<string | null> {
   return null;
 }
 
-export async function backupToDrive(token: string, logs: LogEntry[]): Promise<void> {
-  const fileContent = JSON.stringify(logs, null, 2);
+export async function backupToDrive(token: string, data: BackupData): Promise<void> {
+  const fileContent = JSON.stringify(data, null, 2);
   const metadata = {
     name: 'lifetracker_backup.json',
     mimeType: 'application/json'
@@ -93,7 +107,7 @@ export async function backupToDrive(token: string, logs: LogEntry[]): Promise<vo
   }
 }
 
-export async function restoreFromDrive(token: string): Promise<LogEntry[]> {
+export async function restoreFromDrive(token: string): Promise<BackupData> {
   const fileId = await findBackupFileId(token);
   
   if (!fileId) {
@@ -114,5 +128,5 @@ export async function restoreFromDrive(token: string): Promise<LogEntry[]> {
   }
 
   const data = await response.json();
-  return data as LogEntry[];
+  return data;
 }

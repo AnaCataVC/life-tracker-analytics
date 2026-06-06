@@ -36,8 +36,7 @@ export const translations = {
     moodStruggling: "1 - Struggling",
     moodRadiant: "10 - Radiant",
     feelingTags: "Feeling Tags",
-    whatHappened: "What happened today? (Notes)",
-    notesPlaceholder: "Jotted down symptoms, thoughts, interactions, triggers or triumphs...",
+
     bedtime: "Bedtime (Night before)",
     waketime: "Waketime (Morning)",
     hours: "hours",
@@ -183,8 +182,7 @@ export const translations = {
     moodStruggling: "1 - Difícil",
     moodRadiant: "10 - Radiante",
     feelingTags: "Etiquetas de Sentimientos",
-    whatHappened: "¿Qué pasó hoy? (Notas)",
-    notesPlaceholder: "Anota síntomas, pensamientos, interacciones, desencadenantes o logros...",
+
     bedtime: "Hora de acostarse (Noche anterior)",
     waketime: "Hora de despertarse (Mañana)",
     hours: "horas",

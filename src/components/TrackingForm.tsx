@@ -45,7 +45,7 @@ export default function TrackingForm({
 
   // Local state representing form fields
   const [mood, setMood] = useState<number>(7);
-  const [moodNotes, setMoodNotes] = useState<string>("");
+
   const [moodTags, setMoodTags] = useState<string[]>([]);
   
   const [sleepQuality, setSleepQuality] = useState<number>(7);
@@ -79,7 +79,7 @@ export default function TrackingForm({
   useEffect(() => {
     if (entry) {
       setMood(entry.mood);
-      setMoodNotes(entry.moodNotes || "");
+
       setMoodTags(entry.moodTags || []);
       setSleepQuality(entry.sleepQuality);
       setBedtime(entry.bedtime || "22:30");
@@ -92,7 +92,7 @@ export default function TrackingForm({
     } else {
       // Set clean defaults for a new log
       setMood(7);
-      setMoodNotes("");
+
       setMoodTags([]);
       setSleepQuality(7);
       setBedtime("22:30");
@@ -220,7 +220,7 @@ export default function TrackingForm({
     const updatedEntry: LogEntry = {
       date: selectedDate,
       mood,
-      moodNotes: moodNotes.trim(),
+
       moodTags,
       sleepQuality,
       bedtime,

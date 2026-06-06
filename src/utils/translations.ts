@@ -1,0 +1,288 @@
+export const translations = {
+  en: {
+    title: "Life Tracker & Analytics",
+    badge: "Local Analytics & Heuristics",
+    subtitle: "Optimize daily well-being, routines, and sleeping cycles seamlessly",
+    activeGoals: "Primary Mental Focus Target",
+    trackedDays: "Tracked Period",
+    daysChecked: "Days Checked",
+    averageMood: "Baseline Mood Average",
+    rating: "Score",
+    configureProfile: "Configure Profile",
+    demoData: "Demo Data",
+    allCleared: "All tracking data cleared.",
+    demoRestored: "Demonstrative logs restored successfully.",
+    profileSaved: "Your profile is saved and personalized goals are updated!",
+    toastSaved: "Successfully saved logging for",
+    habitExists: "This habit is already present in today's tracking routines!",
+    habitAdded: "Added habit to today's daily checklist!",
+    eraserAll: "Erase All Data",
+    eraserConfirm: "Are you absolutely sure you want to clear ALL logged days? This cannot be undone.",
+    demoConfirm: "Are you sure you want to restore the sample 7-day demo logging? This will overwrite current entries.",
+    overwriteConfirm: "An entry already exists for this date. Do you want to overwrite it?",
+    
+    // Profile Modal
+    personalizeGoals: "Personalize Tracking Goals (Context for Heuristic Insights)",
+    profileName: "User Profile / Nickname",
+    enterName: "Enter your name",
+    goalsComma: "Profile Goals (Comma divided)",
+    saveProfile: "Save Goals Profile",
+    cancel: "Cancel",
+
+    // Tracking Form
+    logSheet: "Daily Log Sheet",
+    logSubtitle: "Log or edit metrics for the selected date",
+    moodRating: "1. Daily Mood Rating",
+    moodStruggling: "1 - Struggling",
+    moodRadiant: "10 - Radiant",
+    feelingTags: "Feeling Tags",
+    whatHappened: "What happened today? (Notes)",
+    notesPlaceholder: "Jotted down symptoms, thoughts, interactions, triggers or triumphs...",
+    bedtime: "Bedtime (Night before)",
+    waketime: "Waketime (Morning)",
+    hours: "hours",
+    sleepSchedule: "2. Sleeping Schedule",
+    sleepQuality: "Sleep Quality Score",
+    sleepTerrible: "Terrible, fragmented sleep",
+    sleepRestless: "Restless, tossed and turned",
+    sleepDecent: "Felt decent, average sleep",
+    sleepRestful: "Very restful, sound sleep",
+    sleepDeep: "Deep, perfect, highly refreshing sleep",
+    concentratingLevel: "3. Concentrating Level",
+    distracted: "Distracted",
+    flow: "Flow",
+    focusLabel: "Focus",
+    medicineIntake: "4. Medicine Intake",
+    taking: "Taking",
+    noMeds: "No medications specified for this day yet. Add one below to track.",
+    medPlaceholder: "Med name (e.g. Vitamin D3)",
+    dosagePlaceholder: "Dosage (e.g. 1mcg)",
+    dailyTasks: "5. Daily Tasks Well-being Routine",
+    completedRate: "Completed",
+    allDone: "All done! Or no habits/tasks added for today. Add below.",
+    taskPlaceholder: "New habit, task or routine task...",
+    saveEntryBtn: "Save Day's Data",
+    
+    // Tabs
+    tabTrends: "Trends & Interactive Correlations",
+    tabInsights: "Offline Heuristic Advisor",
+
+    // Charts
+    chartTitle: "Visual Correlations & Trends",
+    chartSubtitle: "Cross-analyze metrics to identify what drives clean focus and mood",
+    options: {
+      moodSleep: "Mood Rating vs Sleeping Quality",
+      focusSleep: "Focus Score vs Sleep Hours",
+      tasksMood: "Routines Completed vs Mood Rating",
+      medsFocus: "Meds Adherence vs Focus Score"
+    },
+    avgMoodLabel: "Average Mood",
+    avgSleepLabel: "Average Sleep",
+    avgFocusLabel: "Average Focus",
+    noHistory: "No history logs to render yet.",
+    addEntryTip: "Use the Daily Log Sheet on the left to save your first wellness entry! ✨",
+    chartTrendAnalysis: "Visual Trend Analysis",
+    trendsDescription: {
+      moodSleep: "Average Mood is {mood}/10 with an average of {sleep} hours of sleep. Notice how sleep quality tracks closely with overall daily vibrancy.",
+      focusSleep: "Concentration average is {focus}/10. Better rest (7+ hours) usually minimizes afternoon brain fog.",
+      tasksMood: "Accomplishing tasks creates an active Dopamine feedback loop. Completing daily routines boosts baseline mood metrics.",
+      medsFocus: "Medication consistency anchors focus. Compare compliance rates with concentration levels below.",
+      insufficient: "Log at least 3 days to calculate trends."
+    },
+
+    // Local Insights
+    localAdvisorTitle: "Statistical Well-being Advisor",
+    localAdvisorSubtitle: "Uncover mathematically proven habit patterns and correlations from your local data securely",
+    recalculate: "Recalculate Statistics",
+    summaryTitle: "Narrative Habit Synthesis",
+    prepareFor: "Prepared especially for {name}",
+    correlationsTitle: "Identified Well-being Correlations",
+    positivesTitle: "Strengths & Milestones",
+    warningsTitle: "Inconsistencies & Flags",
+    actionableHabitsTitle: "Personalized Actionable Habits Based on Your History",
+    difficulty: "Effort",
+    commitRoutine: "Commit as Task Routine",
+    insufficientDataTitle: "Discover How Your Habits Shape Your Mind",
+    insufficientDataDesc: "Once you log at least 3 entries, our local correlation engine will analyze your sleep quality, bedtime, focus scores, task completions, and medication adherence.",
+    analyzeBtn: "Perform Local Data Diagnostics",
+
+    // Heuristics categories
+    categories: {
+      sleepDuration: "Sleep Duration",
+      sleepQuality: "Sleep Quality",
+      moodRating: "Mood Rating",
+      focusScore: "Focus Score",
+      taskCompliance: "Routines Completed",
+      medsCompliance: "Medication Compliance"
+    },
+
+    // Directions
+    positive: "Positive",
+    negative: "Negative",
+    neutral: "Neutral",
+
+    // Interactive helper
+    helperTitle: "Personal Correlation Guide",
+    helperSubtitle: "Daily mood, sleep routines, focus and health are deeply intertwined. For best analyses:",
+    helperList1: "Log bedtime & wake accurately.",
+    helperList2: "Update completed checklist items.",
+    helperList3: "Note down unique triggers daily.",
+    helperList4: "Review statistics & heuristics trends.",
+
+    // Default template tags
+    tags: {
+      calm: "🧘 calm",
+      energetic: "⚡ energetic",
+      tired: "🥱 tired",
+      anxious: "😰 anxious",
+      stressed: "🤯 stressed",
+      hyperfocused: "🎯 focused",
+      peaceful: "🍃 peaceful",
+      sad: "😢 sad",
+      restless: "🔄 restless"
+    }
+  },
+  es: {
+    title: "Tracker y Análisis de Vida",
+    badge: "Análisis Local y Heurística",
+    subtitle: "Optimiza tu bienestar, rutinas y ciclos de sueño de manera fluida",
+    activeGoals: "Meta Principal de Enfoque Mental",
+    trackedDays: "Período de Registro",
+    daysChecked: "Días Registrados",
+    averageMood: "Promedio de Estado de Ánimo",
+    rating: "Nota",
+    configureProfile: "Configurar Perfil",
+    demoData: "Datos de Demostración",
+    allCleared: "Todos los datos de registro han sido borrados.",
+    demoRestored: "Datos demostrativos restaurados con éxito.",
+    profileSaved: "¡Tu perfil ha sido guardado y tus metas personalizadas actualizadas!",
+    toastSaved: "¡Registro guardado con éxito para el",
+    habitExists: "¡Este hábito ya está presente en las rutinas de seguimiento de hoy!",
+    habitAdded: "¡Hábito añadido a la lista de tareas de hoy!",
+    eraserAll: "Borrar Todos los Datos",
+    eraserConfirm: "¿Estás absolutamente seguro de que quieres borrar TODOS los días registrados? Esta acción no se puede deshacer.",
+    demoConfirm: "¿Estás seguro de que deseas restaurar los 7 días de demostración? Esto sobrescribirá las entradas actuales.",
+    overwriteConfirm: "Ya existe un registro para esta fecha. ¿Deseas sobrescribirlo con los nuevos datos?",
+    
+    // Profile Modal
+    personalizeGoals: "Personalizar Metas (Contexto para Consejos Heurísticos)",
+    profileName: "Perfil de Usuario / Apodo",
+    enterName: "Introduce tu nombre",
+    goalsComma: "Objetivos de Bienestar (Separados por comas)",
+    saveProfile: "Guardar Perfil de Objetivos",
+    cancel: "Cancelar",
+
+    // Tracking Form
+    logSheet: "Ficha de Registro Diario",
+    logSubtitle: "Registra o edita métricas para la fecha seleccionada",
+    moodRating: "1. Nivel de Estado de Ánimo",
+    moodStruggling: "1 - Difícil",
+    moodRadiant: "10 - Radiante",
+    feelingTags: "Etiquetas de Sentimientos",
+    whatHappened: "¿Qué pasó hoy? (Notas)",
+    notesPlaceholder: "Anota síntomas, pensamientos, interacciones, desencadenantes o logros...",
+    bedtime: "Hora de acostarse (Noche anterior)",
+    waketime: "Hora de despertarse (Mañana)",
+    hours: "horas",
+    sleepSchedule: "2. Horario de Sueño",
+    sleepQuality: "Calidad de Sueño",
+    sleepTerrible: "Sueño terrible y fragmentado",
+    sleepRestless: "Inquieto, dando muchas vueltas",
+    sleepDecent: "Se sintió aceptable, sueño promedio",
+    sleepRestful: "Muy reparador, sueño profundo",
+    sleepDeep: "Sueño perfecto, profundo y muy refrescante",
+    concentratingLevel: "3. Nivel de Concentración",
+    distracted: "Distraído",
+    flow: "Enfocado",
+    focusLabel: "Enfoque",
+    medicineIntake: "4. Toma de Medicamentos",
+    taking: "Tomando",
+    noMeds: "No se han especificado medicamentos para este día aún. Agrega uno abajo para registrar.",
+    medPlaceholder: "Nombre de medicina (ej. Vitamina D3)",
+    dosagePlaceholder: "Dosis (ej. 1 tableta)",
+    dailyTasks: "5. Rutinas y Tareas Diarias",
+    completedRate: "Cumplimiento",
+    allDone: "¡Todo completado! O no hay tareas para hoy. Agrega una abajo.",
+    taskPlaceholder: "Nuevo hábito, tarea o rutina...",
+    saveEntryBtn: "Guardar Datos del Día",
+    
+    // Tabs
+    tabTrends: "Tendencias y Análisis Interactivos",
+    tabInsights: "Consejero Heurístico Offline",
+
+    // Charts
+    chartTitle: "Análisis Visuales y Tendencias",
+    chartSubtitle: "Analiza de forma cruzada tus métricas para identificar qué impulsa tu enfoque y ánimo",
+    options: {
+      moodSleep: "Estado de Ánimo vs Calidad del Sueño",
+      focusSleep: "Nivel de Enfoque vs Horas de Sueño",
+      tasksMood: "Rutinas Completadas vs Estado de Ánimo",
+      medsFocus: "Adherencia a Medicinas vs Nivel de Enfoque"
+    },
+    avgMoodLabel: "Ánimo Promedio",
+    avgSleepLabel: "Sueño Promedio",
+    avgFocusLabel: "Enfoque Promedio",
+    noHistory: "No hay registros históricos para mostrar todavía.",
+    addEntryTip: "¡Utiliza la Ficha de Registro Diario a la izquierda para guardar tu primera entrada! ✨",
+    chartTrendAnalysis: "Análisis de Tendencias Visuales",
+    trendsDescription: {
+      moodSleep: "El Ánimo Promedio es de {mood}/10 con un promedio de {sleep} h de sueño. Observa cómo la calidad de sueño se asocia al dinamismo diario.",
+      focusSleep: "La concentración promedio es {focus}/10. Un descanso óptimo (7+ horas) suele reducir la niebla mental por la tarde.",
+      tasksMood: "Cumplir tus tareas crea un ciclo de retroalimentación de dopamina. Completar rutinas cotidianas eleva el estado de ánimo base.",
+      medsFocus: "La constancia en medicamentos ancla el enfoque. Compara las tasas de toma con la concentración abajo.",
+      insufficient: "Registra al menos 3 días para calcular tendencias."
+    },
+
+    // Local Insights
+    localAdvisorTitle: "Consejero Estadístico de Bienestar",
+    localAdvisorSubtitle: "Descubre patrones de hábitos y análisis calculados matemáticamente desde tus datos locales",
+    recalculate: "Recalcular Estadísticas",
+    summaryTitle: "Síntesis de Hábitos Narrativa",
+    prepareFor: "Preparado especialmente para {name}",
+    correlationsTitle: "Análisis de Bienestar Identificados",
+    positivesTitle: "Fortalezas y Logros",
+    warningsTitle: "Inconsistencias y Alertas",
+    actionableHabitsTitle: "Hábitos Personalizados Recomendados según tus Datos",
+    difficulty: "Esfuerzo",
+    commitRoutine: "Adoptar como Rutina de Tareas",
+    insufficientDataTitle: "Descubre Cómo tus Hábitos Moldean tu Mente",
+    insufficientDataDesc: "Cuando registres al menos 3 entradas, nuestro motor local de correlación analizará tus datos de sueño, enfoque, rutinas y medicamentos.",
+    analyzeBtn: "Realizar Diagnóstico Local de Datos",
+
+    // Heuristics categories
+    categories: {
+      sleepDuration: "Horas de Sueño",
+      sleepQuality: "Calidad de Sueño",
+      moodRating: "Estado de Ánimo",
+      focusScore: "Nivel de Enfoque",
+      taskCompliance: "Tareas Completadas",
+      medsCompliance: "Medicamentos Tomados"
+    },
+
+    // Directions
+    positive: "Positiva",
+    negative: "Negativa",
+    neutral: "Neutral",
+
+    // Interactive helper
+    helperTitle: "Guía de Correlación Personal",
+    helperSubtitle: "El estado de ánimo diario, el sueño, el enfoque y la salud están profundamente entrelazados. Para mejores análisis:",
+    helperList1: "Registra con precisión la hora de dormir y despertar.",
+    helperList2: "Mantén actualizadas tus metas completadas.",
+    helperList3: "Apunta desencadenantes únicos diariamente.",
+    helperList4: "Revisa las tendencias estadísticas y heurísticas locales.",
+
+    // Default template tags
+    tags: {
+      calm: "🧘 calma",
+      energetic: "⚡ energía",
+      tired: "🥱 cansancio",
+      anxious: "😰 ansiedad",
+      stressed: "🤯 estrés",
+      hyperfocused: "🎯 enfoque",
+      peaceful: "🍃 paz",
+      sad: "😢 tristeza",
+      restless: "🔄 inquietud"
+    }
+  }
+};

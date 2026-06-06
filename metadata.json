@@ -1,0 +1,6 @@
+{
+  "name": "Mood, Sleep & Habit Well-being Tracker",
+  "description": "Track daily mood, sleeping schedule, concentration levels, daily tasks, and medicine intake, with bilingual support and offline heuristic wellness correlations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,189 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap');
+@import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui;
+  --font-outfit: "Outfit", sans-serif;
+  --font-playfair: "Playfair Display", serif;
+}
+
+/* Smooth transition for theme switching */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+body {
+  background-color: #f8fafc !important; /* Slate-50: Crisp, bright light-mode background */
+  color: #334155 !important; /* Slate-700 text color */
+}
+
+/* Root & body variables for high-contrast dark mode */
+.dark, .dark body {
+  color-scheme: dark;
+  background-color: #0c0a09 !important; /* Stone-950: Extremely deep high contrast black/charcoal */
+  color: #fafaf9 !important; /* Stone-50 */
+}
+
+/* Main layouts and wrappers */
+.dark .min-h-screen {
+  background-color: #0c0a09 !important;
+}
+
+/* Light white cards transitioned to high-contrast dark neutral borders & cards */
+.dark .bg-white,
+.dark [class*="bg-white"] {
+  background-color: #1c1917 !important; /* Stone-900 high contrast */
+  color: #fafaf9 !important;
+}
+
+/* Slate details & backgrounds */
+.dark .bg-slate-50,
+.dark .bg-slate-50\/50,
+.dark [class*="bg-slate-50"] {
+  background-color: #0c0a09 !important;
+}
+
+.dark .bg-slate-100,
+.dark [class*="bg-slate-100"] {
+  background-color: #292524 !important; /* Stone-800 */
+}
+
+/* High contrast dark border lines */
+.dark .border,
+.dark [class*="border-"] {
+  border-color: #44403c !important; /* Stone-700 solid high contrast */
+}
+
+/* Texts and Headings legibility and contrast */
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-slate-700,
+.dark .text-slate-600,
+.dark span.text-slate-800,
+.dark span.text-slate-900 {
+  color: #fafaf9 !important;
+}
+
+/* High visibility for secondary descriptions and labels */
+.dark p,
+.dark p.text-slate-500,
+.dark .text-slate-500,
+.dark .text-slate-400 {
+  color: #d6d3d1 !important; /* Stone-300 */
+}
+
+/* Inputs, textareas, selection custom styling */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  border-color: #57534e !important; /* Stone-600 */
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #a8a29e !important;
+}
+
+/* Highlight badge colors override for readability */
+.dark .bg-indigo-50 {
+  background-color: #2e1065 !important;
+  color: #f5f3ff !important;
+  border-color: #5b21b6 !important;
+}
+
+.dark .fill-indigo-100 {
+  fill: #4c1d95 !important;
+}
+
+.dark .text-indigo-600, 
+.dark .text-indigo-700 {
+  color: #c084fc !important;
+}
+
+.dark .border-indigo-200 {
+  border-color: #6d28d9 !important;
+}
+
+.dark .bg-emerald-50 {
+  background-color: #064e3b !important;
+  color: #ecfdf5 !important;
+  border-color: #047857 !important;
+}
+
+.dark .text-emerald-600, 
+.dark .text-emerald-500 {
+  color: #34d399 !important;
+}
+
+.dark .bg-teal-50 {
+  background-color: #042f2e !important;
+  color: #ccfbf1 !important;
+  border-color: #0d9488 !important;
+}
+
+.dark .text-teal-600, 
+.dark .text-teal-500 {
+  color: #2dd4bf !important;
+}
+
+.dark .bg-blue-50 {
+  background-color: #172554 !important;
+  color: #dbeafe !important;
+  border-color: #1d4ed8 !important;
+}
+
+.dark .text-blue-600, 
+.dark .text-blue-500 {
+  color: #60a5fa !important;
+}
+
+.dark .bg-amber-50 {
+  background-color: #451a03 !important;
+  color: #fef3c7 !important;
+  border-color: #b45309 !important;
+}
+
+.dark .text-amber-600, 
+.dark .text-amber-500 {
+  color: #fbbf24 !important;
+}
+
+.dark .bg-rose-50 {
+  background-color: #4c0519 !important;
+  color: #ffe4e6 !important;
+  border-color: #be123c !important;
+}
+
+.dark .text-rose-600, 
+.dark .text-rose-500 {
+  color: #fb7185 !important;
+}
+
+/* Active system navigation tabs in dark mode */
+.dark .bg-white.text-indigo-900 {
+  background-color: #292524 !important; /* Stone-800 */
+  color: #ffffff !important;
+  box-shadow: 0 0 0 1px #57534e !important;
+}
+
+/* Ensure chart grid/axis labels inside Analytics are visible in dark mode */
+.dark .recharts-cartesian-axis-tick-value {
+  fill: #d6d3d1 !important;
+}
+.dark .recharts-legend-item-text {
+  color: #fafaf9 !important;
+}
+.dark .recharts-default-tooltip {
+  background-color: #1c1917 !important;
+  border-color: #44403c !important;
+}

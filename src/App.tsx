@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { LogEntry, EnabledTrackers } from "./types";
-import { getSampleHistory, getTodayDateString } from "./utils/helpers";
+import { getSampleHistory, getTodayDateString, getTotalSleep } from "./utils/helpers";
 import TrackingForm from "./components/TrackingForm";
 import AnalyticsCharts from "./components/AnalyticsCharts";
 import LocalInsights from "./components/LocalInsights";
@@ -404,6 +404,17 @@ export default function App() {
     }
   };
 
+  // Delete specific log
+  const handleDeleteSpecificDay = async (date: string) => {
+    const confirmMessage = lang === "es" 
+      ? `¿Estás seguro de que quieres borrar el registro del día ${date}?`
+      : `Are you sure you want to delete the log for ${date}?`;
+    if (window.confirm(confirmMessage)) {
+      await db.logs.delete(date);
+      triggerToast(lang === "es" ? "Registro borrado." : "Log deleted.");
+    }
+  };
+
   // Commit an offline dynamic suggested habit as a recurring checklist task for Today
   const handleCommitHabit = (habitName: string) => {
     const today = getTodayDateString();
@@ -476,7 +487,7 @@ export default function App() {
     ? (moodList.reduce((a, b) => a + b, 0) / moodList.length).toFixed(1) 
     : "0.0";
 
-  const sleepDurList = historyLogs.map((l) => l.sleepDuration || 0);
+  const sleepDurList = historyLogs.map((l) => getTotalSleep(l, enabledTrackers) || 0);
   const averageSleepDuration = sleepDurList.length > 0
     ? (sleepDurList.reduce((a, b) => a + b, 0) / sleepDurList.length).toFixed(1)
     : "0.0";
@@ -695,16 +706,19 @@ export default function App() {
                                 : "bg-white border-slate-100 hover:bg-slate-50"
                             }`}
                           >
-                            <div className="space-y-0.5">
-                              <span className="text-xs font-mono font-bold text-slate-800 block">
-                                {log.date} {log.date === getTodayDateString() ? (lang === "es" ? "(Hoy)" : "(Today)") : ""}
-                              </span>
-                              <span className="text-[10px] text-slate-400 font-sans block truncate max-w-[190px]">
-                                {lang === "es" ? "Ánimo" : "Mood"}: {log.mood}/10 • {lang === "es" ? "Sueño" : "Quality"}: {log.sleepQuality}/10 {enabledTrackers.focus ? `• Foco: ${log.concentration}/10` : ""}
-                              </span>
+                            <div className="flex items-center gap-3">
+                              <div className={`w-2 h-2 rounded-full shrink-0 ${log.mood >= 7 ? 'bg-emerald-400' : log.mood >= 4 ? 'bg-amber-400' : 'bg-red-400'}`} />
+                              <div className="space-y-0.5">
+                                <span className={`text-xs font-mono font-bold block ${isSelected ? 'text-indigo-900 dark:text-indigo-100' : 'text-slate-800 dark:text-slate-200'}`}>
+                                  {log.date} {log.date === getTodayDateString() ? (lang === "es" ? "(Hoy)" : "(Today)") : ""}
+                                </span>
+                                <span className={`text-[10px] font-sans block truncate max-w-[190px] ${isSelected ? 'text-indigo-600/80 dark:text-indigo-300/80' : 'text-slate-400 dark:text-slate-500'}`}>
+                                  {lang === "es" ? "Ánimo" : "Mood"}: {log.mood}/10 • {lang === "es" ? "Sueño" : "Quality"}: {log.sleepQuality}/10 {enabledTrackers.focus ? `• Foco: ${log.concentration}/10` : ""}
+                                </span>
+                              </div>
                             </div>
                             <span className="text-xs font-mono font-semibold bg-white border border-slate-200 px-2 py-1 rounded-md text-slate-600 shrink-0 shadow-3xs">
-                              {log.sleepDuration} hrs
+                              {getTotalSleep(log, enabledTrackers)} hrs
                             </span>
                           </button>
                         );
@@ -712,18 +726,6 @@ export default function App() {
                   </div>
                 )}
 
-                {/* Reset database capabilities */}
-                {historyLogs.length > 0 && (
-                  <div className="pt-2 border-t border-slate-100">
-                    <button
-                      onClick={handleClearAllData}
-                      className="text-[10px] font-mono text-red-400 hover:text-red-600 transition-colors flex items-center justify-center gap-1 mx-auto cursor-pointer font-semibold"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      {t.eraserAll}
-                    </button>
-                  </div>
-                )}
               </div>
 
               {/* HELPER QUICK-GUIDE INFOBAR */}
@@ -976,27 +978,50 @@ export default function App() {
                   </label>
 
                   {/* Sleep tracking Switch */}
-                  <label className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl hover:bg-slate-100/50 cursor-pointer transition-colors gap-4">
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <span className="w-7 h-7 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center shrink-0">
-                        <Moon className="w-4 h-4" />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <span className="text-xs font-semibold text-slate-800 block truncate">
-                          {lang === "es" ? "Horario y Calidad de Sueño" : "Sleep schedule & Quality"}
+                  <div className="space-y-2">
+                    <label className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl hover:bg-slate-100/50 cursor-pointer transition-colors gap-4">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <span className="w-7 h-7 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center shrink-0">
+                          <Moon className="w-4 h-4" />
                         </span>
-                        <span className="text-[10px] text-slate-400 font-sans block leading-tight">
-                          {lang === "es" ? "Horas de sueño estimadas y calidad de descanso." : "Calculated rest duration, bedtime clocks & score."}
-                        </span>
+                        <div className="min-w-0 flex-1">
+                          <span className="text-xs font-semibold text-slate-800 block truncate">
+                            {lang === "es" ? "Horario y Calidad de Sueño" : "Sleep schedule & Quality"}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-sans block leading-tight">
+                            {lang === "es" ? "Horas de sueño estimadas y calidad de descanso." : "Calculated rest duration, bedtime clocks & score."}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <input 
-                      type="checkbox" 
-                      checked={enabledTrackers.sleep}
-                      onChange={(e) => setEnabledTrackers({ ...enabledTrackers, sleep: e.target.checked })}
-                      className="w-4 h-4 accent-blue-500 rounded cursor-pointer shrink-0"
-                    />
-                  </label>
+                      <input 
+                        type="checkbox" 
+                        checked={enabledTrackers.sleep}
+                        onChange={(e) => setEnabledTrackers({ ...enabledTrackers, sleep: e.target.checked })}
+                        className="w-4 h-4 accent-blue-500 rounded cursor-pointer shrink-0"
+                      />
+                    </label>
+
+                    {enabledTrackers.sleep && (
+                      <label className="flex items-center justify-between p-3 ml-6 bg-slate-50/50 border border-slate-100 rounded-xl hover:bg-slate-100/50 cursor-pointer transition-colors gap-4">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className="min-w-0 flex-1">
+                            <span className="text-xs font-semibold text-slate-800 block truncate">
+                              {t.addNapConfigTitle}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-sans block leading-tight">
+                              {t.addNapConfigDesc}
+                            </span>
+                          </div>
+                        </div>
+                        <input 
+                          type="checkbox" 
+                          checked={!!enabledTrackers.addNapToTotalSleep}
+                          onChange={(e) => setEnabledTrackers({ ...enabledTrackers, addNapToTotalSleep: e.target.checked })}
+                          className="w-4 h-4 accent-blue-500 rounded cursor-pointer shrink-0"
+                        />
+                      </label>
+                    )}
+                  </div>
 
                   {/* Focus tracking Switch */}
                   <label className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl hover:bg-slate-100/50 cursor-pointer transition-colors gap-4">
@@ -1069,6 +1094,55 @@ export default function App() {
                     />
                   </label>
 
+                </div>
+              </div>
+
+              {/* 5. DATA MANAGEMENT */}
+              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-3xs space-y-4">
+                <div className="flex items-center gap-2">
+                  <Trash2 className="w-5 h-5 text-red-500" />
+                  <h3 className="font-sans font-bold text-sm text-slate-800">
+                    {lang === "es" ? "Gestión de Datos" : "Data Management"}
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-500 font-sans leading-relaxed">
+                  {lang === "es"
+                    ? "Borra registros específicos o todo tu historial de bienestar."
+                    : "Delete specific records or your entire well-being history."}
+                </p>
+
+                <div className="space-y-4 pt-1">
+                  {/* Delete specific day dropdown & button */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-mono tracking-wider uppercase text-slate-400 font-bold block">
+                      {lang === "es" ? "Borrar día específico" : "Delete specific day"}
+                    </label>
+                    <div className="flex gap-2">
+                      <select id="delete-specific-date" className="flex-1 bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-sans text-slate-700 focus:outline-hidden">
+                        <option value="">{lang === "es" ? "Selecciona un día..." : "Select a day..."}</option>
+                        {[...historyLogs].sort((a, b) => b.date.localeCompare(a.date)).map(log => (
+                          <option key={log.date} value={log.date}>{log.date}</option>
+                        ))}
+                      </select>
+                      <button onClick={() => {
+                        const d = (document.getElementById("delete-specific-date") as HTMLSelectElement).value;
+                        if(d) handleDeleteSpecificDay(d);
+                      }} className="px-4 bg-white border border-red-200 text-red-600 hover:bg-red-50 font-medium text-xs rounded-lg cursor-pointer shrink-0 transition-colors">
+                        {lang === "es" ? "Borrar" : "Delete"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Clear all history */}
+                  <div className="pt-3 border-t border-slate-100">
+                    <button
+                      onClick={handleClearAllData}
+                      className="w-full py-2.5 bg-red-50 border border-red-100 hover:bg-red-100 text-red-600 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-3xs"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      {t.eraserAll}
+                    </button>
+                  </div>
                 </div>
               </div>
 

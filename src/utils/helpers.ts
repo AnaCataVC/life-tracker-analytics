@@ -20,6 +20,17 @@ export function calculateSleepDuration(bedtime: string, waketime: string): numbe
 }
 
 /**
+ * Calculates the total sleep including nap if the user has enabled it and taken a nap
+ */
+export function getTotalSleep(entry: LogEntry, enabledTrackers?: { addNapToTotalSleep?: boolean }): number {
+  let total = entry.sleepDuration || 0;
+  if (enabledTrackers?.addNapToTotalSleep && entry.tookNap && entry.napDuration) {
+    total += entry.napDuration;
+  }
+  return parseFloat(total.toFixed(1));
+}
+
+/**
  * Returns formatted date string in YYYY-MM-DD
  */
 export function getTodayDateString(): string {

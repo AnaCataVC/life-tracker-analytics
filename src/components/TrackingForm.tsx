@@ -51,6 +51,8 @@ export default function TrackingForm({
   const [sleepQuality, setSleepQuality] = useState<number>(7);
   const [bedtime, setBedtime] = useState<string>("22:30");
   const [waketime, setWaketime] = useState<string>("07:00");
+  const [tookNap, setTookNap] = useState<boolean>(false);
+  const [napDuration, setNapDuration] = useState<number>(1);
   
   const [concentration, setConcentration] = useState<number>(7);
   
@@ -82,6 +84,8 @@ export default function TrackingForm({
       setSleepQuality(entry.sleepQuality);
       setBedtime(entry.bedtime || "22:30");
       setWaketime(entry.waketime || "07:00");
+      setTookNap(entry.tookNap || false);
+      setNapDuration(entry.napDuration || 1);
       setConcentration(entry.concentration);
       setTasks(entry.tasks || []);
       setMedications(entry.medications || []);
@@ -93,6 +97,8 @@ export default function TrackingForm({
       setSleepQuality(7);
       setBedtime("22:30");
       setWaketime("07:00");
+      setTookNap(false);
+      setNapDuration(1);
       setConcentration(7);
       
       // Auto-populate default checklist tasks from habits design/template
@@ -220,6 +226,8 @@ export default function TrackingForm({
       bedtime,
       waketime,
       sleepDuration: sleepHours,
+      tookNap,
+      napDuration: tookNap ? napDuration : 0,
       concentration,
       tasks,
       medications
@@ -228,6 +236,7 @@ export default function TrackingForm({
   };
 
   const sleepHoursCalculated = calculateSleepDuration(bedtime, waketime);
+  const totalSleepDisplay = sleepHoursCalculated + (enabledTrackers.addNapToTotalSleep && tookNap ? napDuration : 0);
   const moodLabel = getMoodLabel(mood);
 
   // Stats for the log sheet
@@ -244,10 +253,21 @@ export default function TrackingForm({
       {/* Panel Header */}
       <div className="bg-slate-50 border-b border-slate-100 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 id="log-panel-title" className="font-sans font-semibold text-lg text-slate-800 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-indigo-500" />
-            {t.logSheet}
-          </h2>
+          <div className="flex items-center gap-3">
+            <h2 id="log-panel-title" className="font-sans font-semibold text-lg text-slate-800 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-indigo-500" />
+              {t.logSheet}
+            </h2>
+            {entry ? (
+              <span className="px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-700 text-[10px] font-bold uppercase tracking-wider">
+                {lang === "es" ? "Registro Existente" : "Existing Log"}
+              </span>
+            ) : (
+              <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase tracking-wider">
+                {lang === "es" ? "Nuevo Registro" : "New Log"}
+              </span>
+            )}
+          </div>
           <p className="text-xs text-slate-500 mt-0.5 font-sans">
             {t.logSubtitle}
           </p>
@@ -355,7 +375,7 @@ export default function TrackingForm({
                 {t.sleepSchedule}
               </h3>
               <span className="text-[11px] font-semibold font-sans px-3 py-1 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
-                {sleepHoursCalculated > 0 ? `${sleepHoursCalculated} ${t.hours}` : `0.0 ${t.hours}`}
+                {totalSleepDisplay > 0 ? `${totalSleepDisplay} ${t.hours}` : `0.0 ${t.hours}`}
               </span>
             </div>
 
@@ -403,6 +423,37 @@ export default function TrackingForm({
                 <p className="text-[11px] text-zinc-505 italic mt-1 bg-white px-2 py-1 rounded border border-slate-100">
                   {getSleepLabel(sleepQuality)}
                 </p>
+              </div>
+
+              {/* Nap Settings */}
+              <div className="pt-2 border-t border-blue-100/30">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={tookNap}
+                    onChange={(e) => setTookNap(e.target.checked)}
+                    className="w-4 h-4 accent-blue-500 rounded cursor-pointer"
+                  />
+                  <span className="text-xs font-sans text-slate-700">
+                    {(t as any).tookNap || "¿Tomaste siesta?"}
+                  </span>
+                </label>
+                {tookNap && (
+                  <div className="mt-3 pl-7 space-y-1 animate-fade-in">
+                    <label className="text-[10px] font-mono tracking-wider uppercase text-slate-400">
+                      {(t as any).napDuration || "Horas de siesta"}
+                    </label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      min="0"
+                      max="10"
+                      value={napDuration}
+                      onChange={(e) => setNapDuration(parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 font-mono focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>

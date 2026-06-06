@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { LogEntry, EnabledTrackers } from "../types";
 import { translations } from "../utils/translations";
 import { calculateLocalInsights } from "../utils/analysisEngine";
+import { getTotalSleep } from "../utils/helpers";
 import { 
   ResponsiveContainer, 
   ComposedChart, 
@@ -206,7 +207,7 @@ export default function AnalyticsCharts({ history, lang, mode = "all", theme = "
 
   // Calculate descriptive statistics to make correlations visual
   const avgMood = history.length > 0 ? (history.reduce((sum, e) => sum + e.mood, 0) / history.length).toFixed(1) : "0.0";
-  const avgSleep = history.length > 0 ? (history.reduce((sum, e) => sum + (e.sleepDuration || 0), 0) / history.length).toFixed(1) : "0.0";
+  const avgSleep = history.length > 0 ? (history.reduce((sum, e) => sum + getTotalSleep(e, enabledTrackers), 0) / history.length).toFixed(1) : "0.0";
   const avgFocus = history.length > 0 ? (history.reduce((sum, e) => sum + e.concentration, 0) / history.length).toFixed(1) : "0.0";
 
   // Calculate weekly statistics (last 7 logged days)
@@ -1240,7 +1241,7 @@ export default function AnalyticsCharts({ history, lang, mode = "all", theme = "
                       <div className="space-y-0.5 text-slate-600 font-medium font-mono pt-1">
                         <p className="flex justify-between">
                           <span className="text-slate-400">{lang === "es" ? "Duración:" : "Duration:"}</span> 
-                          <span className="text-slate-700 font-bold">{selectedDayLog.sleepDuration || 0}h</span>
+                          <span className="text-slate-700 font-bold">{getTotalSleep(selectedDayLog, enabledTrackers)}h</span>
                         </p>
                         <p className="flex justify-between">
                           <span className="text-slate-400">{lang === "es" ? "Horario:" : "Schedule:"}</span> 

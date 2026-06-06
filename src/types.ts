@@ -20,6 +20,8 @@ export interface LogEntry {
   bedtime: string; // "HH:MM" e.g. "23:00"
   waketime: string; // "HH:MM" e.g. "07:30"
   sleepDuration: number; // calculated hours, e.g. 8.5
+  tookNap?: boolean;
+  napDuration?: number; // hours
   concentration: number; // 1-10
   tasks: TaskItem[];
   medications: MedicationItem[];
@@ -82,4 +84,5 @@ export interface EnabledTrackers {
   focus: boolean;
   medications: boolean;
   tasks: boolean;
+  addNapToTotalSleep?: boolean;
 }

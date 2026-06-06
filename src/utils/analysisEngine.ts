@@ -1,5 +1,6 @@
 import { LogEntry, WellBeingInsights, Correlation, ActionableInsight, EnabledTrackers } from "../types";
 import { translations } from "./translations";
+import { getTotalSleep } from "./helpers";
 
 /**
  * Calculates offline statistical insights from log history without any AI API calls.
@@ -35,7 +36,7 @@ export function calculateLocalInsights(
   const totalDays = history.length;
   const avgMood = history.reduce((sum, entry) => sum + entry.mood, 0) / totalDays;
   const avgSleepQual = history.reduce((sum, entry) => sum + entry.sleepQuality, 0) / totalDays;
-  const avgSleepDur = history.reduce((sum, entry) => sum + (entry.sleepDuration || 0), 0) / totalDays;
+  const avgSleepDur = history.reduce((sum, entry) => sum + getTotalSleep(entry, et), 0) / totalDays;
   const avgFocus = history.reduce((sum, entry) => sum + entry.concentration, 0) / totalDays;
 
   // Task compliance & medication averages are no longer grouped.
@@ -43,8 +44,8 @@ export function calculateLocalInsights(
 
   // Let's compute actual statistical groupings
   // 1. Sleep Duration influence on Mood
-  const highSleepDays = history.filter((e) => (e.sleepDuration || 0) >= 7.5);
-  const lowSleepDays = history.filter((e) => (e.sleepDuration || 0) < 7.5);
+  const highSleepDays = history.filter((e) => getTotalSleep(e, et) >= 7.5);
+  const lowSleepDays = history.filter((e) => getTotalSleep(e, et) < 7.5);
   const avgMoodOnHighSleep = highSleepDays.length > 0 
     ? highSleepDays.reduce((sum, e) => sum + e.mood, 0) / highSleepDays.length 
     : avgMood;
@@ -280,8 +281,8 @@ export function calculateLocalInsights(
     const avgFocusWith = daysWith.length > 0 ? daysWith.reduce((s, e) => s + e.concentration, 0) / daysWith.length : 0;
     const avgFocusWithout = daysWithout.length > 0 ? daysWithout.reduce((s, e) => s + e.concentration, 0) / daysWithout.length : 0;
 
-    const avgSleepDurWith = daysWith.length > 0 ? daysWith.reduce((s, e) => s + (e.sleepDuration || 0), 0) / daysWith.length : 0;
-    const avgSleepDurWithout = daysWithout.length > 0 ? daysWithout.reduce((s, e) => s + (e.sleepDuration || 0), 0) / daysWithout.length : 0;
+    const avgSleepDurWith = daysWith.length > 0 ? daysWith.reduce((s, e) => s + getTotalSleep(e, et), 0) / daysWith.length : 0;
+    const avgSleepDurWithout = daysWithout.length > 0 ? daysWithout.reduce((s, e) => s + getTotalSleep(e, et), 0) / daysWithout.length : 0;
 
     const avgSleepQualWith = daysWith.length > 0 ? daysWith.reduce((s, e) => s + e.sleepQuality, 0) / daysWith.length : 0;
     const avgSleepQualWithout = daysWithout.length > 0 ? daysWithout.reduce((s, e) => s + e.sleepQuality, 0) / daysWithout.length : 0;
@@ -346,8 +347,8 @@ export function calculateLocalInsights(
     const avgFocusWith = daysWith.length > 0 ? daysWith.reduce((s, e) => s + e.concentration, 0) / daysWith.length : 0;
     const avgFocusWithout = daysWithout.length > 0 ? daysWithout.reduce((s, e) => s + e.concentration, 0) / daysWithout.length : 0;
 
-    const avgSleepDurWith = daysWith.length > 0 ? daysWith.reduce((s, e) => s + (e.sleepDuration || 0), 0) / daysWith.length : 0;
-    const avgSleepDurWithout = daysWithout.length > 0 ? daysWithout.reduce((s, e) => s + (e.sleepDuration || 0), 0) / daysWithout.length : 0;
+    const avgSleepDurWith = daysWith.length > 0 ? daysWith.reduce((s, e) => s + getTotalSleep(e, et), 0) / daysWith.length : 0;
+    const avgSleepDurWithout = daysWithout.length > 0 ? daysWithout.reduce((s, e) => s + getTotalSleep(e, et), 0) / daysWithout.length : 0;
 
     const avgSleepQualWith = daysWith.length > 0 ? daysWith.reduce((s, e) => s + e.sleepQuality, 0) / daysWith.length : 0;
     const avgSleepQualWithout = daysWithout.length > 0 ? daysWithout.reduce((s, e) => s + e.sleepQuality, 0) / daysWithout.length : 0;

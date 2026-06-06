@@ -109,10 +109,10 @@ export default function App() {
 
   // Google Sheets integration state variables
   const [googleToken, setGoogleToken] = useState<string | null>(() => {
-    return sessionStorage.getItem("wellbeing_google_token") || null;
+    return localStorage.getItem("wellbeing_google_token") || null;
   });
   const [googleUser, setGoogleUser] = useState<{ email: string; name?: string; picture?: string } | null>(() => {
-    const saved = sessionStorage.getItem("wellbeing_google_user");
+    const saved = localStorage.getItem("wellbeing_google_user");
     return saved ? JSON.parse(saved) : null;
   });
   const [detectedClientId, setDetectedClientId] = useState<string>("");
@@ -139,7 +139,7 @@ export default function App() {
           picture: data.picture || undefined
         };
         setGoogleUser(userInfo);
-        sessionStorage.setItem("wellbeing_google_user", JSON.stringify(userInfo));
+        localStorage.setItem("wellbeing_google_user", JSON.stringify(userInfo));
       }
     } catch (e) {
       console.error("Error fetching Google profile:", e);
@@ -242,7 +242,7 @@ export default function App() {
     try {
       const token = await loginGoogleDrive(activeClientId);
       setGoogleToken(token);
-      sessionStorage.setItem("wellbeing_google_token", token);
+      localStorage.setItem("wellbeing_google_token", token);
       triggerToast(lang === "es" ? "Conectado a Google exitosamente! 🎉" : "Connected to Google successfully! 🎉");
       await fetchUserProfile(token);
     } catch (err: any) {
@@ -337,8 +337,8 @@ export default function App() {
   const handleDisconnectGoogle = () => {
     setGoogleToken(null);
     setGoogleUser(null);
-    sessionStorage.removeItem("wellbeing_google_token");
-    sessionStorage.removeItem("wellbeing_google_user");
+    localStorage.removeItem("wellbeing_google_token");
+    localStorage.removeItem("wellbeing_google_user");
     triggerToast(lang === "es" ? "Desconectado de Google." : "Disconnected from Google.");
   };
 

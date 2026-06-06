@@ -46,7 +46,7 @@ export function loginGoogleDrive(customClientId?: string): Promise<string> {
         }
       });
       
-      client.requestAccessToken({ prompt: 'consent' });
+      client.requestAccessToken({ prompt: '' });
     } catch (err) {
       console.error("GIS Error:", err);
       reject(err);

@@ -11,7 +11,11 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- Fallback content for automated bots (like Google's OAuth verification scraper) that don't run JavaScript -->
+    <div id="root">
+      <h1>Life Tracker Analytics</h1>
+      <p>Bienvenido a Life Tracker Analytics. El propósito de esta aplicación es ayudarte a registrar tus hábitos diarios, estado de ánimo, rutinas y calidad de sueño. Todos los datos se almacenan y analizan localmente en tu dispositivo para ofrecerte estadísticas personalizadas sobre tu bienestar.</p>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

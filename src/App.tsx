@@ -1452,7 +1452,7 @@ export default function App() {
                         ? "Respalda tus registros de bienestar de forma local e instantánea, y sincroniza automáticamente un archivo seguro en tu Google Drive."
                         : "Backup your wellness records locally and instantly, and automatically sync a secure file to your Google Drive."}
                     </p>
-                    <p className="text-[11px] text-indigo-600 bg-indigo-50/50 p-2 rounded-lg font-sans leading-relaxed mt-2 border border-indigo-100/50">
+                    <p className="text-[11px] text-indigo-600 dark:text-indigo-300 bg-indigo-50/50 dark:bg-indigo-900/40 p-2 rounded-lg font-sans leading-relaxed mt-2 border border-indigo-100/50 dark:border-indigo-800/50">
                       {lang === "es"
                         ? "💡 Recomendado: Te protege de perder datos si borras el caché del navegador y te permite usar la app en múltiples dispositivos."
                         : "💡 Recommended: Protects against accidental browser cache clears and allows you to use the app across multiple devices."}

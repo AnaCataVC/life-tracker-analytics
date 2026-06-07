@@ -705,6 +705,22 @@ export default function App() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         
+        {/* APP PURPOSE BANNER (Required for Google Verification) */}
+        <div className="bg-indigo-50/50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-2xl p-4 sm:p-5 flex gap-4 animate-fade-in shadow-sm">
+          <div className="hidden sm:flex w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-800/50 text-indigo-600 dark:text-indigo-400 items-center justify-center shrink-0">
+            <Info className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="font-bold text-indigo-900 dark:text-indigo-100 font-sans text-sm sm:text-base">
+              {lang === "es" ? "Bienvenido a Life Tracker Analytics" : "Welcome to Life Tracker Analytics"}
+            </h2>
+            <p className="text-xs sm:text-sm text-indigo-700/80 dark:text-indigo-300/80 font-sans mt-1.5 leading-relaxed">
+              {lang === "es" 
+                ? "El propósito de esta aplicación es ayudarte a registrar tus hábitos diarios, estado de ánimo, rutinas y calidad de sueño. Todos los datos se almacenan y analizan localmente en tu dispositivo para ofrecerte estadísticas personalizadas sobre tu bienestar."
+                : "The purpose of this application is to help you track your daily habits, mood, routines, and sleep quality. All data is stored and analyzed locally on your device to provide personalized statistics about your well-being."}
+            </p>
+          </div>
+        </div>
         {/* PWA INSTALL BANNER */}
         {!isPWA && deferredPrompt && (
           <div className="bg-gradient-to-r from-indigo-600 to-indigo-800 text-white p-4 rounded-2xl flex items-center justify-between shadow-lg mb-4 animate-fade-in">

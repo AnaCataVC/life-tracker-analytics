@@ -1,6 +1,6 @@
 export const translations = {
   en: {
-    title: "Life Tracker & Analytics",
+    title: "Life Tracker Analytics",
     badge: "Local Analytics & Heuristics",
     subtitle: "Optimize daily well-being, routines, and sleeping cycles seamlessly",
     activeGoals: "Primary Mental Focus Target",
@@ -147,7 +147,7 @@ export const translations = {
     }
   },
   es: {
-    title: "Tracker y Análisis de Vida",
+    title: "Life Tracker Analytics",
     badge: "Análisis Local y Heurística",
     subtitle: "Optimiza tu bienestar, rutinas y ciclos de sueño de manera fluida",
     activeGoals: "Meta Principal de Enfoque Mental",

@@ -818,9 +818,12 @@ export default function App() {
                                 </span>
                               </div>
                             </div>
-                            <span className="text-xs font-mono font-semibold bg-white border border-slate-200 px-2 py-1 rounded-md text-slate-600 shrink-0 shadow-3xs">
-                              {getTotalSleep(log, enabledTrackers)} hrs
-                            </span>
+                            {enabledTrackers.sleep && (
+                              <span className="text-xs font-mono font-semibold bg-white border border-slate-200 px-2 py-1 rounded-md text-slate-600 shrink-0 shadow-3xs flex items-center gap-1">
+                                <Moon className="w-3 h-3 text-blue-500" />
+                                {getTotalSleep(log, enabledTrackers)} hrs
+                              </span>
+                            )}
                           </button>
                         );
                       })}

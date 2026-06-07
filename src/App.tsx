@@ -21,7 +21,6 @@ import {
   User, 
   Compass, 
   RefreshCw,
-  Clock,
   LineChart,
   Globe,
   Database,
@@ -563,6 +562,38 @@ export default function App() {
   // Retrieve selected log entry or fallback to undefined
   const activeLogEntry = historyLogs.find((log) => log.date === selectedDate);
 
+  // Calculate missing dates
+  const missingDates = React.useMemo(() => {
+    if (historyLogs.length === 0) return [];
+    
+    const sortedLogs = [...historyLogs].sort((a, b) => a.date.localeCompare(b.date));
+    const firstDateStr = sortedLogs[0].date;
+    const todayStr = getTodayDateString();
+    
+    const firstDate = new Date(firstDateStr + "T00:00:00");
+    const todayDate = new Date(todayStr + "T00:00:00");
+    
+    const missing: string[] = [];
+    const existingDates = new Set(historyLogs.map(l => l.date));
+    
+    const currentDate = new Date(firstDate);
+    currentDate.setDate(currentDate.getDate() + 1);
+    
+    while (currentDate <= todayDate) {
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+      const day = String(currentDate.getDate()).padStart(2, "0");
+      const dateStr = `${year}-${month}-${day}`;
+      
+      if (!existingDates.has(dateStr)) {
+        missing.push(dateStr);
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    return missing.sort((a, b) => b.localeCompare(a));
+  }, [historyLogs]);
+
   // Brief dynamic statistical calculations for global display widgets
   const trackedDaysCount = historyLogs.length;
   const moodList = historyLogs.map((l) => l.mood);
@@ -792,76 +823,65 @@ export default function App() {
               />
             </div>
 
-            {/* ROW 2: Tracking timeline logs & helper (Side by side on large screens) */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* ROW 2: Helper Info and Missing Logs */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-2">
               
-              {/* HISTORY LIST TIMELINE LOG VIEWER CARD */}
+              {/* MISSING LOGS CARD */}
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-xs space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-sans font-semibold text-xs text-slate-700 tracking-wider uppercase flex items-center gap-1.5">
-                    <Clock className="w-4 h-4 text-indigo-500" />
-                    {lang === "es" ? "Historial de Registros" : "Your Logging Timeline"}
+                    <Calendar className="w-4 h-4 text-rose-500" />
+                    {lang === "es" ? "Días sin Registro" : "Missing Logs"}
                   </h3>
-                  <span className="text-[10px] font-mono text-slate-400 bg-slate-50 px-2.5 py-0.5 rounded-full font-bold">
-                    {lang === "es" ? "RECIENTES" : "RECENT"}
+                  <span className="text-[10px] font-mono text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full font-bold">
+                    {missingDates.length} {lang === "es" ? "PENDIENTES" : "PENDING"}
                   </span>
                 </div>
 
-                {historyLogs.length === 0 ? (
+                {missingDates.length === 0 ? (
                   <div className="bg-slate-50/50 p-6 rounded-xl border border-slate-100 text-center space-y-2.5 animate-fade-in select-none">
-                    <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center mx-auto">
-                      <Smile className="w-4 h-4 text-amber-500" />
+                    <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mx-auto">
+                      <CheckSquare className="w-4 h-4 text-emerald-500" />
                     </div>
                     <div className="space-y-1">
                       <p className="text-xs font-sans font-bold text-slate-800">
-                        {lang === "es" ? "¡Comienza tu viaje de bienestar!" : "Begin your well-being journey!"}
+                        {lang === "es" ? "¡Todo al día!" : "All caught up!"}
                       </p>
                       <p className="text-[11px] font-sans text-slate-500 leading-relaxed max-w-[260px] mx-auto">
                         {lang === "es"
-                          ? "No hay entradas registradas aún. Elige una fecha y guarda tu primer registro usando el formulario de la izquierda."
-                          : "No saved entries yet. Select a date and complete the Tracking Form on the left to begin."}
+                          ? "Has registrado todos los días desde que comenzaste."
+                          : "You have tracked every day since you started."}
                       </p>
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-1.5 max-h-[380px] overflow-y-auto pr-1">
-                    {[...historyLogs]
-                      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                      .map((log) => {
-                        const isSelected = log.date === selectedDate;
-                        return (
-                          <button
-                            key={log.date}
-                            onClick={() => setSelectedDate(log.date)}
-                            className={`w-full p-3 rounded-xl border flex items-center justify-between text-left transition-all duration-200 cursor-pointer ${
-                              isSelected
-                                ? "bg-indigo-50/50 border-indigo-200 ring-2 ring-indigo-50"
-                                : "bg-white border-slate-100 hover:bg-slate-50"
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className={`w-2 h-2 rounded-full shrink-0 ${log.mood >= 7 ? 'bg-emerald-400' : log.mood >= 4 ? 'bg-amber-400' : 'bg-red-400'}`} />
-                              <div className="space-y-0.5">
-                                <span className={`text-xs font-mono font-bold block ${isSelected ? 'text-indigo-900 dark:text-indigo-100' : 'text-slate-800 dark:text-slate-200'}`}>
-                                  {log.date} {log.date === getTodayDateString() ? (lang === "es" ? "(Hoy)" : "(Today)") : ""}
-                                </span>
-                                <span className={`text-[10px] font-sans block truncate max-w-[190px] ${isSelected ? 'text-indigo-600/80 dark:text-indigo-300/80' : 'text-slate-400 dark:text-slate-500'}`}>
-                                  {lang === "es" ? "Ánimo" : "Mood"}: {log.mood}/10 • {lang === "es" ? "Sueño" : "Quality"}: {log.sleepQuality}/10 {enabledTrackers.focus ? `• Foco: ${log.concentration}/10` : ""}
-                                </span>
-                              </div>
-                            </div>
-                            {enabledTrackers.sleep && (
-                              <span className="text-xs font-mono font-semibold bg-white border border-slate-200 px-2 py-1 rounded-md text-slate-600 shrink-0 shadow-3xs flex items-center gap-1">
-                                <Moon className="w-3 h-3 text-blue-500" />
-                                {getTotalSleep(log, enabledTrackers)} hrs
-                              </span>
-                            )}
-                          </button>
-                        );
-                      })}
+                    {missingDates.map((date) => (
+                      <div
+                        key={date}
+                        className="w-full p-3 rounded-xl border border-rose-100/50 bg-rose-50/30 flex items-center justify-between text-left transition-all duration-200"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 rounded-full bg-rose-400 shrink-0" />
+                          <span className="text-xs font-mono font-bold text-slate-800 dark:text-slate-700">
+                            {date} {date === getTodayDateString() ? (lang === "es" ? "(Hoy)" : "(Today)") : ""}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setSelectedDate(date);
+                            const p = document.getElementById("tracking-panel");
+                            if (p) p.scrollIntoView({ behavior: "smooth" });
+                          }}
+                          className="px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-bold rounded-lg transition-colors cursor-pointer shadow-xs flex items-center gap-1.5"
+                        >
+                          <Pencil className="w-3 h-3" />
+                          {lang === "es" ? "Completa aquí" : "Complete here"}
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 )}
-
               </div>
 
               {/* HELPER QUICK-GUIDE INFOBAR */}
@@ -873,7 +893,7 @@ export default function App() {
                   <h4 className="font-sans font-semibold text-xs text-slate-900 uppercase tracking-widest">
                     {t.helperTitle}
                   </h4>
-                  <p className="text-xs text-slate-505 font-sans leading-relaxed">
+                  <p className="text-xs text-slate-500 font-sans leading-relaxed">
                     {t.helperSubtitle}
                   </p>
                   <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-500 font-sans pt-1">
@@ -896,7 +916,6 @@ export default function App() {
                   </ul>
                 </div>
               </div>
-
             </div>
           </div>
         )}

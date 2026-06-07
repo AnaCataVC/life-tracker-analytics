@@ -123,6 +123,7 @@ export const translations = {
     positive: "Positive",
     negative: "Negative",
     neutral: "Neutral",
+    associatedWith: "Associated with:",
 
     // Interactive helper
     helperTitle: "Personal Correlation Guide",
@@ -269,6 +270,7 @@ export const translations = {
     positive: "Positiva",
     negative: "Negativa",
     neutral: "Neutral",
+    associatedWith: "Asociado a:",
 
     // Interactive helper
     helperTitle: "Guía de Correlación Personal",

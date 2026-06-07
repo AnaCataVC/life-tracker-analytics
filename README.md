@@ -17,7 +17,7 @@
 ## English
 
 ### 1. Project Description
-Life Tracker Analytics is a comprehensive, privacy-focused React web application designed to help you track your daily well-being metrics and discover actionable insights through data analysis. You can register your mood, sleep patterns, focus levels, daily habits, and medication intake.
+Life Tracker Analytics is a comprehensive, privacy-focused React web application designed to help you track your daily well-being metrics and discover actionable insights through data analysis. You can register your mood, feeling tags, sleep patterns, focus levels, daily habits, and medication intake.
 
 ### 2. Technologies Used
 - **Frontend:** React 19, TypeScript
@@ -56,7 +56,7 @@ This project is licensed under the [GNU AGPLv3 License](LICENSE). This ensures t
 ## Español
 
 ### 1. Descripción del Proyecto
-Life Tracker Analytics es una aplicación web integral en React, enfocada en la privacidad, diseñada para ayudarte a registrar tus métricas de bienestar diario y descubrir patrones útiles a través del análisis de datos. Permite registrar estado de ánimo, sueño, niveles de concentración, hábitos diarios y medicamentos.
+Life Tracker Analytics es una aplicación web integral en React, enfocada en la privacidad, diseñada para ayudarte a registrar tus métricas de bienestar diario y descubrir patrones útiles a través del análisis de datos. Permite registrar estado de ánimo, etiquetas de sentimientos (mood tags), sueño, niveles de concentración, hábitos diarios y medicamentos.
 
 ### 2. Tecnologías Utilizadas
 - **Frontend:** React 19, TypeScript

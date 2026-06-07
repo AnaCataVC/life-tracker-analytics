@@ -254,6 +254,43 @@ export function calculateLocalInsights(
 
   const individualImpacts: any[] = [];
 
+  const getAssociatedTags = (daysWith: LogEntry[], daysWithout: LogEntry[]): string[] => {
+    if (!et.mood || daysWith.length === 0) return [];
+
+    const getTopTags = (daysSubset: LogEntry[]) => {
+      const tagCounts = new Map<string, number>();
+      daysSubset.forEach(e => {
+        e.moodTags?.forEach(t => {
+          tagCounts.set(t, (tagCounts.get(t) || 0) + 1);
+        });
+      });
+      const tagFreqs = new Map<string, number>();
+      tagCounts.forEach((count, tag) => {
+        tagFreqs.set(tag, count / daysSubset.length);
+      });
+      return tagFreqs;
+    };
+
+    const freqsWith = getTopTags(daysWith);
+    const freqsWithout = getTopTags(daysWithout);
+
+    const associatedTags: string[] = [];
+    freqsWith.forEach((freqWith, tag) => {
+      const freqWithout = freqsWithout.get(tag) || 0;
+      if (freqWith >= 0.20 && freqWith >= freqWithout + 0.15) {
+        associatedTags.push(tag);
+      }
+    });
+
+    associatedTags.sort((a, b) => {
+      const diffA = freqsWith.get(a)! - (freqsWithout.get(a) || 0);
+      const diffB = freqsWith.get(b)! - (freqsWithout.get(b) || 0);
+      return diffB - diffA;
+    });
+
+    return associatedTags;
+  };
+
   // 3. Calculate impact for each unique habit
   if (et.tasks) {
     allHabitNames.forEach(habitName => {
@@ -308,7 +345,8 @@ export function calculateLocalInsights(
       moodDifference: parseFloat(moodDifference.toFixed(2)),
       focusDifference: parseFloat(focusDifference.toFixed(2)),
       sleepDurDifference: parseFloat(sleepDurDifference.toFixed(2)),
-      sleepQualDifference: parseFloat(sleepQualDifference.toFixed(2))
+      sleepQualDifference: parseFloat(sleepQualDifference.toFixed(2)),
+      associatedTags: getAssociatedTags(daysWith, daysWithout)
     });
   });
   }
@@ -375,7 +413,8 @@ export function calculateLocalInsights(
       moodDifference: parseFloat(moodDifference.toFixed(2)),
       focusDifference: parseFloat(focusDifference.toFixed(2)),
       sleepDurDifference: parseFloat(sleepDurDifference.toFixed(2)),
-      sleepQualDifference: parseFloat(sleepQualDifference.toFixed(2))
+      sleepQualDifference: parseFloat(sleepQualDifference.toFixed(2)),
+      associatedTags: getAssociatedTags(daysWith, daysWithout)
     });
   });
   }

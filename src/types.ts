@@ -59,6 +59,7 @@ export interface IndividualFactorImpact {
   focusDifference: number; // avgFocusWith - avgFocusWithout
   sleepDurDifference?: number;
   sleepQualDifference?: number;
+  associatedTags?: string[];
 }
 
 export interface WellBeingInsights {

@@ -346,6 +346,23 @@ export default function LocalInsights({ history, googleName, onCommitHabit, lang
                           </div>
                         </div>
                       </div>
+
+                      {/* Associated Tags */}
+                      {factor.associatedTags && factor.associatedTags.length > 0 && (
+                        <div className="pt-2 mt-1 border-t border-slate-50 dark:border-slate-900 flex flex-wrap items-center gap-1.5">
+                          <span className="text-[9px] text-slate-400 dark:text-slate-500 font-sans mr-0.5">
+                            {(t as any).associatedWith}
+                          </span>
+                          {factor.associatedTags.slice(0, 3).map((tag: string) => {
+                            const tagTranslation = t.tags?.[tag] || tag;
+                            return (
+                              <span key={tag} className="text-[9px] font-medium font-sans bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded uppercase">
+                                {tagTranslation}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   );
                 })}

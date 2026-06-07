@@ -6,8 +6,8 @@ This file provides context and guidelines for AI coding assistants (like Gemini)
 **Life Tracker & Analytics** is a React-based web application designed for comprehensive well-being tracking. It allows users to register daily logs of their personal data and analyze trends.
 
 ### Core Features
-- **Daily Tracking**: Users log their Mood, Sleep (duration, quality, bedtime, waketime), Focus/Concentration, Medications, and Daily Habits.
-- **Analytics & Insights**: Generates statistics and correlation charts from the tracked data. Emphasizes *individual impact* (e.g., how a specific habit or medication affects mood and sleep) rather than aggregated daily compliance percentages.
+- **Daily Tracking**: Users log their Mood, Mood Tags (Feeling Tags), Sleep (duration, quality, bedtime, waketime), Focus/Concentration, Medications, and Daily Habits.
+- **Analytics & Insights**: Generates statistics and correlation charts from the tracked data. Emphasizes *individual impact* (e.g., how a specific habit or medication affects mood, sleep, and the occurrence of qualitative mood tags) rather than aggregated daily compliance percentages.
 - **Google Drive Backup**: Built-in OAuth integration to sync data securely to the user's personal Google Drive as a single encrypted JSON file (`lifetracker_backup.json`).
 - **Bilingual & Theming**: Supports English and Spanish, alongside Light and Dark modes.
 

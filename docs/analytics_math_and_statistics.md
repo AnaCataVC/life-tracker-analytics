@@ -71,8 +71,11 @@ For a given factor $F$:
 3. **Calculate Deltas:**
    $$ \Delta_{\text{mood}} = \bar{\text{Mood}}_{\text{with}} - \bar{\text{Mood}}_{\text{without}} $$
    $$ \Delta_{\text{focus}} = \bar{\text{Focus}}_{\text{with}} - \bar{\text{Focus}}_{\text{without}} $$
+4. **Calculate Associated Mood Tags:**
+   - For both $G_{\text{with}}$ and $G_{\text{without}}$, calculate the relative frequency of each recorded qualitative mood tag.
+   - A tag $T$ is deemed "associated" with factor $F$ if its relative frequency in $G_{\text{with}}$ is $\ge 20\%$ AND its frequency in $G_{\text{with}}$ is at least $15$ percentage points higher than in $G_{\text{without}}$.
 
-These raw deltas ($\Delta_{\text{mood}}$ and $\Delta_{\text{focus}}$) are then presented visually to the user, identifying exactly how many points a single habit or medicine adds or subtracts from their baseline well-being.
+These raw deltas ($\Delta_{\text{mood}}$ and $\Delta_{\text{focus}}$) and associated tags are then presented visually to the user, identifying exactly how many points and which feelings a single habit or medicine adds or subtracts from their baseline well-being.
 
 ---
 

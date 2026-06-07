@@ -87,8 +87,46 @@ export default function TrackingForm({
       setTookNap(entry.tookNap || false);
       setNapDuration(entry.napDuration || 1);
       setConcentration(entry.concentration);
-      setTasks(entry.tasks || []);
-      setMedications(entry.medications || []);
+      
+      let currentTasks = entry.tasks || [];
+      let currentMeds = entry.medications || [];
+
+      // If it's today, automatically append any new templates that aren't present
+      if (selectedDate === getTodayDateString()) {
+        const newTasks = [...currentTasks];
+        habitsTemplate.forEach((h, i) => {
+          if (!newTasks.some(t => t.name.toLowerCase() === h.name.toLowerCase())) {
+            newTasks.push({
+              id: `template-task-new-${i}-${Date.now()}`,
+              name: h.name,
+              completed: false
+            });
+          }
+        });
+        
+        const newMeds = [...currentMeds];
+        medicationTemplate.forEach((m, index) => {
+          const existingMed = newMeds.find(cm => cm.name.toLowerCase() === m.name.toLowerCase());
+          if (existingMed) {
+            if (existingMed.dosage !== m.dosage) {
+              existingMed.dosage = m.dosage;
+            }
+          } else {
+            newMeds.push({
+              id: `template-med-new-${index}-${Date.now()}`,
+              name: m.name,
+              dosage: m.dosage,
+              taken: false
+            });
+          }
+        });
+        
+        currentTasks = newTasks;
+        currentMeds = newMeds;
+      }
+
+      setTasks(currentTasks);
+      setMedications(currentMeds);
     } else {
       // Set clean defaults for a new log
       setMood(7);
@@ -118,7 +156,8 @@ export default function TrackingForm({
       }));
       setMedications(initialMeds);
     }
-  }, [entry, selectedDate, medicationTemplate, lang]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entry, selectedDate]);
 
   const toggleTag = (tagName: string) => {
     if (moodTags.includes(tagName)) {

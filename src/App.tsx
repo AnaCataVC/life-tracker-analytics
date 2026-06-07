@@ -124,6 +124,7 @@ export default function App() {
   });
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [showSheetsConfig, setShowSheetsConfig] = useState<boolean>(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState<boolean>(false);
 
   // PWA state variables
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -1511,17 +1512,91 @@ export default function App() {
       </main>
       
       {/* Footer */}
-      <footer className="bg-white border-t border-slate-100 mt-12 py-6 text-center text-xs text-slate-400 font-sans">
+      <footer className="bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800/80 mt-12 py-6 text-center text-xs text-slate-400 font-sans relative">
+        <div id="privacy-policy" className="absolute -top-20"></div>
         <p>
           © 2026 {lang === "es" ? "Desarrollado por " : "Developed by "}
-          <a href="https://ana-catalina.com" target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:text-indigo-600 transition-colors font-semibold">
+          <a href="https://ana-catalina.com" target="_blank" rel="noopener noreferrer" className="text-indigo-500 dark:text-indigo-400 hover:text-indigo-600 transition-colors font-semibold">
             Ana-Catalina
           </a>
         </p>
-        <p className="mt-2">
+        <p className="mt-2 mb-3">
           {lang === "es" ? "Plataforma de bienestar personal. Encriptado localmente con análisis seguro full-stack." : "Personal well-being platform. Encrypted locally with secure full-stack analytics."}
         </p>
+        <button 
+          onClick={() => setShowPrivacyModal(true)} 
+          className="text-slate-500 dark:text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors underline decoration-slate-300 dark:decoration-slate-700 hover:decoration-indigo-300 cursor-pointer"
+        >
+          {lang === "es" ? "Política de Privacidad y Términos de Servicio" : "Privacy Policy & Terms of Service"}
+        </button>
       </footer>
+
+      {/* Privacy Policy Modal */}
+      {showPrivacyModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
+            <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900">
+              <h2 className="font-bold text-slate-800 dark:text-slate-100 font-sans flex items-center gap-2">
+                <Globe className="w-5 h-5 text-indigo-500" />
+                {lang === "es" ? "Política de Privacidad y Términos" : "Privacy Policy & Terms"}
+              </h2>
+              <button 
+                onClick={() => setShowPrivacyModal(false)}
+                className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
+              >
+                <Plus className="w-6 h-6 rotate-45" />
+              </button>
+            </div>
+            <div className="p-5 overflow-y-auto text-sm text-slate-600 dark:text-slate-300 space-y-4 font-sans leading-relaxed bg-slate-50/50 dark:bg-slate-900/50">
+              <div className="bg-indigo-50 dark:bg-indigo-950/40 p-4 rounded-xl border border-indigo-100 dark:border-indigo-800/60 text-indigo-800 dark:text-indigo-200 font-semibold text-xs text-center">
+                {lang === "es" 
+                  ? "Life Tracker & Analytics es una aplicación 'Local-First'. Todos sus datos se almacenan exclusivamente en su dispositivo."
+                  : "Life Tracker & Analytics is a 'Local-First' application. All your data is stored exclusively on your device."}
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-1 flex items-center gap-1.5">
+                  <Database className="w-4 h-4 text-indigo-400" />
+                  {lang === "es" ? "Uso de Google Drive" : "Google Drive Usage"}
+                </h3>
+                <p>
+                  {lang === "es" 
+                    ? "La aplicación solicita acceso a su Google Drive (permiso 'drive.file') únicamente con el propósito de crear, leer y actualizar un único archivo de respaldo cifrado llamado 'lifetracker_backup.json' dentro de su cuenta personal."
+                    : "The application requests access to your Google Drive ('drive.file' scope) solely for the purpose of creating, reading, and updating a single backup file named 'lifetracker_backup.json' within your personal account."}
+                </p>
+                <p className="mt-2">
+                  {lang === "es"
+                    ? "La aplicación no tiene acceso a ningún otro archivo o carpeta en su Google Drive."
+                    : "The app does not have access to any other files or folders in your Google Drive."}
+                </p>
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-1 flex items-center gap-1.5">
+                  <User className="w-4 h-4 text-indigo-400" />
+                  {lang === "es" ? "Recolección y Uso de Datos" : "Data Collection and Use"}
+                </h3>
+                <p>
+                  {lang === "es"
+                    ? "Esta aplicación no cuenta con servidores propios (backend). Sus datos nunca son recolectados, compartidos, vendidos, ni transferidos a terceros. Absolutamente todo el procesamiento analítico se realiza localmente en su navegador."
+                    : "This application has no backend servers. Your data is never collected, shared, sold, or transferred to third parties. All analytical processing is done locally in your browser."}
+                </p>
+                <p className="mt-2">
+                  {lang === "es"
+                    ? "Usted mantiene el control total y puede eliminar el archivo de respaldo desde su Google Drive, o borrar la base de datos local de su navegador en cualquier momento."
+                    : "You maintain full control and can delete the backup file from your Google Drive or clear your local browser database at any time."}
+                </p>
+              </div>
+            </div>
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex justify-end">
+              <button 
+                onClick={() => setShowPrivacyModal(false)}
+                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm transition-colors cursor-pointer shadow-sm"
+              >
+                {lang === "es" ? "Entendido" : "Understood"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

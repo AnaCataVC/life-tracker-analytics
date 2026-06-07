@@ -1494,7 +1494,7 @@ export default function App() {
                         </svg>
                       )}
                       <span>
-                        {isSyncing ? "..." : (lang === "es" ? "Conectar Google" : "Connect Google")}
+                        {isSyncing ? "..." : (lang === "es" ? "Acceder con Google" : "Sign in with Google")}
                       </span>
                     </button>
                   ) : (

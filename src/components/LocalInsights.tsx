@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { LogEntry, EnabledTrackers } from "../types";
-import { calculateLocalInsights } from "../utils/analysisEngine";
+import { calculateLocalInsights } from "../utils/heuristics";
 import { translations } from "../utils/translations";
 import { 
   Sparkles, 

@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { LogEntry, EnabledTrackers } from "../types";
 import { translations } from "../utils/translations";
-import { calculateLocalInsights } from "../utils/analysisEngine";
+import { calculateLocalInsights } from "../utils/heuristics";
 import { getTotalSleep } from "../utils/helpers";
 import { 
   ResponsiveContainer, 

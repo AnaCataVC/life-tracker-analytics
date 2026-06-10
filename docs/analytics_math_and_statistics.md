@@ -68,14 +68,18 @@ For a given factor $F$:
 2. **Calculate Means:** 
    - $\bar{\text{Mood}}_{\text{with}}$ and $\bar{\text{Mood}}_{\text{without}}$
    - $\bar{\text{Focus}}_{\text{with}}$ and $\bar{\text{Focus}}_{\text{without}}$
+   - $\bar{\text{SleepDur}}_{\text{with}}$ and $\bar{\text{SleepDur}}_{\text{without}}$
+   - $\bar{\text{SleepQual}}_{\text{with}}$ and $\bar{\text{SleepQual}}_{\text{without}}$
 3. **Calculate Deltas:**
    $$ \Delta_{\text{mood}} = \bar{\text{Mood}}_{\text{with}} - \bar{\text{Mood}}_{\text{without}} $$
    $$ \Delta_{\text{focus}} = \bar{\text{Focus}}_{\text{with}} - \bar{\text{Focus}}_{\text{without}} $$
+   $$ \Delta_{\text{sleep\_dur}} = \bar{\text{SleepDur}}_{\text{with}} - \bar{\text{SleepDur}}_{\text{without}} $$
+   $$ \Delta_{\text{sleep\_qual}} = \bar{\text{SleepQual}}_{\text{with}} - \bar{\text{SleepQual}}_{\text{without}} $$
 4. **Calculate Associated Mood Tags:**
    - For both $G_{\text{with}}$ and $G_{\text{without}}$, calculate the relative frequency of each recorded qualitative mood tag.
    - A tag $T$ is deemed "associated" with factor $F$ if its relative frequency in $G_{\text{with}}$ is $\ge 20\%$ AND its frequency in $G_{\text{with}}$ is at least $15$ percentage points higher than in $G_{\text{without}}$.
 
-These raw deltas ($\Delta_{\text{mood}}$ and $\Delta_{\text{focus}}$) and associated tags are then presented visually to the user, identifying exactly how many points and which feelings a single habit or medicine adds or subtracts from their baseline well-being.
+These raw deltas ($\Delta_{\text{mood}}$, $\Delta_{\text{focus}}$, $\Delta_{\text{sleep\_dur}}$, and $\Delta_{\text{sleep\_qual}}$) and associated tags are then presented visually to the user, identifying exactly how many points, hours of sleep, and which feelings a single habit or medicine adds or subtracts from their baseline well-being.
 
 ---
 

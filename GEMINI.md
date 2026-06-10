@@ -30,7 +30,8 @@ The workspace is organized as a standard Vite + React project (100% Static Front
         ├── db.ts               # Dexie IndexedDB local-first database schema
         ├── googleDrive.ts      # Google Drive API backup integration logic
         ├── translations.ts     # i18n dictionary (English/Spanish)
-        └── helpers.ts          # Utility functions
+        ├── helpers.ts          # Utility functions
+        └── heuristics/         # Mathematics, heuristics, and scoring engines
 ```
 
 ## Tech Stack
@@ -56,7 +57,7 @@ When modifying or generating code for this repository, please adhere to the foll
 6. **Data Visualization**: Utilize `recharts` for all charts, graphs, and data analytics representations in `AnalyticsCharts`.
 7. **Routing/Architecture**: Be mindful that the project is a pure static Local-First app. There is no backend server. Environment variables (`VITE_GOOGLE_CLIENT_ID`) are used for configuration.
 8. **Analytical Philosophy**: When creating or modifying data analysis logic, strictly focus on *individual impact* (e.g., how taking Medication X specifically alters Focus). Do not use aggregate compliance metrics (like "percentage of daily tasks completed") to calculate well-being scores.
-9. **Analytics Tech Stack (TS vs Python)**: Data analysis and calculations (like in `src/utils/analysisEngine.ts`) MUST remain in TypeScript to run on the client side (browser) for speed, privacy, and architecture simplicity. Do NOT introduce Python microservices or dependencies for data crunching unless explicit machine learning/predictive AI requirements are added.
+9. **Analytics Tech Stack (TS vs Python)**: Data analysis and calculations (like in `src/utils/heuristics/`) MUST remain in TypeScript to run on the client side (browser) for speed, privacy, and architecture simplicity. Do NOT introduce Python microservices or dependencies for data crunching unless explicit machine learning/predictive AI requirements are added.
 10. **Documentation Integrity**: ALWAYS update documentation (`README.md`, `PWA_INSTALLATION.md`, `GEMINI.md`, etc.) when making important architectural or feature changes to keep the project context up-to-date.
 
 ## Development Scripts

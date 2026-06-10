@@ -40,12 +40,12 @@ Rather than using complex regression models, the application uses group-based A/
 
 ## 3. The Well-Being Index Score Formula
 
-The global Well-Being Score is a dynamic, weighted index normalized to a 1-100 scale. It aggregates four key pillars of the user's logged data to provide a single, holistic health metric.
+The global Well-Being Score is a dynamic, weighted index normalized to a 1-100 scale. It aggregates key pillars of the user's logged data to provide a single, holistic health metric.
 
-1. **Mood Score ($W_1 = 30\%$):** 
+1. **Mood Score ($W_1 = 50\%$):** 
    $$ S_{\text{mood}} = \left( \frac{\bar{\text{Mood}}}{10} \right) \times 100 $$
 
-2. **Sleep Score ($W_2 = 40\%$):** Calculated as the average of a Duration Score and a Quality Score.
+2. **Sleep Score ($W_2 = 50\%$):** Calculated as the average of a Duration Score and a Quality Score.
    $$ S_{\text{sleep\_dur}} = \min\left( \frac{\bar{\text{SleepDur}}}{8} \times 100, 100 \right) $$
    $$ S_{\text{sleep\_qual}} = \left( \frac{\bar{\text{SleepQual}}}{10} \right) \times 100 $$
    $$ S_{\text{sleep}} = \frac{S_{\text{sleep\_dur}} + S_{\text{sleep\_qual}}}{2} $$
@@ -80,6 +80,16 @@ For a given factor $F$:
    - A tag $T$ is deemed "associated" with factor $F$ if its relative frequency in $G_{\text{with}}$ is $\ge 20\%$ AND its frequency in $G_{\text{with}}$ is at least $15$ percentage points higher than in $G_{\text{without}}$.
 
 These raw deltas ($\Delta_{\text{mood}}$, $\Delta_{\text{focus}}$, $\Delta_{\text{sleep\_dur}}$, and $\Delta_{\text{sleep\_qual}}$) and associated tags are then presented visually to the user, identifying exactly how many points, hours of sleep, and which feelings a single habit or medicine adds or subtracts from their baseline well-being.
+
+### 4.1 Omission Insights (Actionable Warnings)
+
+In addition to A/B factor deltas, the engine generates actionable warnings by calculating the **Omission Penalty**. This compares the user's overall baseline average to the average on days when a specific habit or medication was *omitted*.
+
+For a given factor $F$:
+$$ \text{Mood Drop} = \bar{\text{Mood}}_{\text{overall}} - \bar{\text{Mood}}_{\text{without}} $$
+$$ \text{Focus Drop} = \bar{\text{Focus}}_{\text{overall}} - \bar{\text{Focus}}_{\text{without}} $$
+
+If the resulting drop is significant (e.g., $\ge 0.5$ points), the system triggers an actionable insight, actively warning the user about the statistical harm of skipping that specific factor compared to their normal baseline.
 
 ---
 

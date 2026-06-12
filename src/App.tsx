@@ -1569,9 +1569,13 @@ export default function App() {
             Ana-Catalina
           </a>
         </p>
-        <p className="mt-2 mb-3">
-          {lang === "es" ? "Plataforma de bienestar personal. Encriptado localmente con análisis seguro full-stack." : "Personal well-being platform. Encrypted locally with secure full-stack analytics."}
-        </p>
+        <div className="mt-2 mb-4 max-w-2xl mx-auto px-4 text-slate-500 dark:text-slate-400 leading-relaxed">
+          <p>
+            {lang === "es" 
+              ? "El propósito de esta aplicación es ayudarte a registrar tus hábitos diarios, estado de ánimo, rutinas y calidad de sueño. Todos los datos se almacenan y analizan localmente en tu dispositivo para ofrecerte estadísticas personalizadas sobre tu bienestar." 
+              : "The purpose of this application is to help you track your daily habits, mood, routines, and sleep quality. All data is stored and analyzed locally on your device to provide personalized statistics about your well-being."}
+          </p>
+        </div>
         <a 
           href={lang === "es" ? "/privacy.html#es" : "/privacy.html#en"}
           target="_blank"

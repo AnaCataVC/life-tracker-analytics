@@ -11,12 +11,18 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
   <body>
-    <!-- Fallback content for automated bots (like Google's OAuth verification scraper) that don't run JavaScript -->
-    <div id="root">
-      <div style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;">
+    <noscript>
+      <div style="padding: 2rem; font-family: sans-serif; text-align: center; color: #334155; line-height: 1.6;">
         <h1>Life Tracker Analytics</h1>
-        <p>Bienvenido a Life Tracker Analytics. El propósito de esta aplicación es ayudarte a registrar tus hábitos diarios, estado de ánimo, rutinas y calidad de sueño. Todos los datos se almacenan y analizan localmente en tu dispositivo para ofrecerte estadísticas personalizadas sobre tu bienestar.</p>
-        <a href="/privacy.html">Política de Privacidad y Términos de Servicio</a>
+        <p><strong>Propósito de la aplicación / App Purpose</strong></p>
+        <p>El propósito de esta aplicación es ayudarte a registrar tus hábitos diarios, estado de ánimo, rutinas y calidad de sueño. Todos los datos se almacenan y analizan localmente en tu dispositivo para ofrecerte estadísticas personalizadas sobre tu bienestar.</p>
+        <p>The purpose of this application is to help you track your daily habits, mood, routines, and sleep quality. All data is stored and analyzed locally on your device to provide personalized statistics about your well-being.</p>
+        <a href="/privacy.html" style="color: #4f46e5;">Política de Privacidad y Términos de Servicio</a>
+      </div>
+    </noscript>
+    <div id="root">
+      <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; color: #64748b;">
+        Cargando / Loading Life Tracker Analytics...
       </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>

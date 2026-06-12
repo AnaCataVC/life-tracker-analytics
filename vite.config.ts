@@ -20,15 +20,10 @@ export default defineConfig(() => {
           background_color: '#ffffff',
           icons: [
             {
-              src: 'favicon.svg',
-              sizes: 'any',
-              type: 'image/svg+xml',
-              purpose: 'any'
-            },
-            {
-              src: 'favicon.png',
-              sizes: '320x320',
-              type: 'image/png'
+              src: 'lta_icon.png',
+              sizes: '192x192 512x512',
+              type: 'image/png',
+              purpose: 'any maskable'
             }
           ]
         }

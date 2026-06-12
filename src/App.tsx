@@ -621,13 +621,9 @@ export default function App() {
       {/* Visual Header Grid & Branding */}
       <header className="bg-white border-b border-slate-100 sticky top-0 z-40 shadow-xs dark:bg-slate-900/90 dark:border-slate-800/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 flex items-center justify-center shrink-0">
-              <svg className="w-5.5 h-5.5" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M64 64C64 64 61 60 56 60C51 60 48 64 48 64M50 50H50.02M62 50H62.02M76 56C76 67.0457 67.0457 76 56 76C44.9543 76 36 67.0457 36 56C36 44.9543 44.9543 36 56 36C67.0457 36 76 44.9543 76 56Z" stroke="#a5b4fc" strokeWidth={4} strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M16 28C16 28 19 32 24 32C29 32 32 28 32 28M18 18H18.02M30 18H30.02M44 24C44 35.0457 35.0457 44 24 44C12.9543 44 4 35.0457 4 24C4 12.9543 12.9543 4 24 4C35.0457 4 44 12.9543 44 24Z" stroke="#a5b4fc" strokeWidth={4} strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M76.6667 20L45 51.6667L28.3333 35L3.33333 60M76.6667 40V20H56.6667" stroke="#4f46e5" strokeWidth={4} strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-12 h-12 flex items-center justify-center shrink-0">
+              <img src="/lta_icon.png" alt="Life Tracker Analytics" className="w-full h-full object-contain drop-shadow-sm" />
             </div>
             <div className="min-w-0">
               <h1 className="font-outfit font-extrabold text-base md:text-lg text-slate-900 dark:text-slate-50 tracking-tight truncate">

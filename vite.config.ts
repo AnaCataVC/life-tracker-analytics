@@ -20,7 +20,7 @@ export default defineConfig(() => {
           background_color: '#ffffff',
           icons: [
             {
-              src: 'lta_icon.png',
+              src: 'lta_icon_850x850.png',
               sizes: '192x192 512x512',
               type: 'image/png',
               purpose: 'any maskable'

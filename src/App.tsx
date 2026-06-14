@@ -623,7 +623,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-12 h-12 flex items-center justify-center shrink-0">
-              <img src="/lta_icon.png" alt="Life Tracker Analytics" className="w-full h-full object-contain drop-shadow-sm" />
+              <img src="/lta_icon_850x850.png" alt="Life Tracker Analytics" className="w-full h-full object-contain drop-shadow-sm" />
             </div>
             <div className="min-w-0">
               <h1 className="font-outfit font-extrabold text-base md:text-lg text-slate-900 dark:text-slate-50 tracking-tight truncate">

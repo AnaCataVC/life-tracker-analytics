@@ -755,7 +755,7 @@ export default function App() {
               </p>
               <div className="mt-2">
                 <a 
-                  href="/privacy.html" 
+                  href="./privacy.html" 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 underline underline-offset-2"
@@ -1580,7 +1580,7 @@ export default function App() {
           </p>
         </div>
         <a 
-          href={lang === "es" ? "/privacy.html#es" : "/privacy.html#en"}
+          href={lang === "es" ? "./privacy.html#es" : "./privacy.html#en"}
           target="_blank"
           rel="noopener noreferrer"
           className="text-slate-500 dark:text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors underline decoration-slate-300 dark:decoration-slate-700 hover:decoration-indigo-300 cursor-pointer inline-block"

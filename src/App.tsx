@@ -738,16 +738,9 @@ export default function App() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         
-        {/* APP PURPOSE BANNER (Required for Google Verification) */}
-        {showPurposeBanner && (
-          <div className="bg-indigo-50/50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-2xl p-4 sm:p-5 flex gap-4 animate-fade-in shadow-sm relative pr-10">
-            <button 
-              onClick={dismissPurposeBanner}
-              className="absolute top-3 right-3 p-1.5 text-indigo-400 hover:text-indigo-600 dark:text-indigo-500 dark:hover:text-indigo-300 transition-colors rounded-lg hover:bg-indigo-100/50 dark:hover:bg-indigo-800/50 cursor-pointer"
-              title={lang === "es" ? "Ocultar mensaje" : "Dismiss message"}
-            >
-              <Plus className="w-5 h-5 rotate-45" />
-            </button>
+        {/* APP PURPOSE BANNER (Permanent for Google Verification) */}
+        {true && (
+          <div className="bg-indigo-50/50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-2xl p-4 sm:p-5 flex gap-4 animate-fade-in shadow-sm relative">
             <div className="hidden sm:flex w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-800/50 text-indigo-600 dark:text-indigo-400 items-center justify-center shrink-0">
               <Info className="w-5 h-5" />
             </div>
@@ -757,9 +750,19 @@ export default function App() {
               </h2>
               <p className="text-xs sm:text-sm text-indigo-700/80 dark:text-indigo-300/80 font-sans mt-1.5 leading-relaxed">
                 {lang === "es" 
-                  ? "El propósito de esta aplicación es ayudarte a registrar tus hábitos diarios, estado de ánimo, rutinas y calidad de sueño. Todos los datos se almacenan y analizan localmente en tu dispositivo para ofrecerte estadísticas personalizadas sobre tu bienestar."
-                  : "The purpose of this application is to help you track your daily habits, mood, routines, and sleep quality. All data is stored and analyzed locally on your device to provide personalized statistics about your well-being."}
+                  ? "El propósito de esta aplicación es ayudarte a registrar tus hábitos diarios, estado de ánimo, rutinas y calidad de sueño. Todos los datos se almacenan y analizan localmente en tu dispositivo. Además, la aplicación solicita acceso a tu Google Drive de forma opcional exclusivamente para crear y mantener un archivo de respaldo seguro con tu información."
+                  : "The purpose of this application is to help you track your daily habits, mood, routines, and sleep quality. All data is stored locally on your device. Additionally, the application optionally requests access to your Google Drive exclusively to create and maintain a secure backup file of your data."}
               </p>
+              <div className="mt-2">
+                <a 
+                  href="/privacy.html" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 underline underline-offset-2"
+                >
+                  {lang === "es" ? "Ver Política de Privacidad" : "View Privacy Policy"}
+                </a>
+              </div>
             </div>
           </div>
         )}
@@ -1572,8 +1575,8 @@ export default function App() {
         <div className="mt-2 mb-4 max-w-2xl mx-auto px-4 text-slate-500 dark:text-slate-400 leading-relaxed">
           <p>
             {lang === "es" 
-              ? "El propósito de esta aplicación es ayudarte a registrar tus hábitos diarios, estado de ánimo, rutinas y calidad de sueño. Todos los datos se almacenan y analizan localmente en tu dispositivo para ofrecerte estadísticas personalizadas sobre tu bienestar." 
-              : "The purpose of this application is to help you track your daily habits, mood, routines, and sleep quality. All data is stored and analyzed locally on your device to provide personalized statistics about your well-being."}
+              ? "El propósito de esta aplicación es ayudarte a registrar tus hábitos diarios, estado de ánimo, rutinas y calidad de sueño. Todos los datos se almacenan localmente. La integración con Google Drive se solicita opcionalmente de forma exclusiva para crear un respaldo de seguridad de tus datos." 
+              : "The purpose of this application is to help you track your daily habits, mood, routines, and sleep quality. All data is stored locally. Google Drive integration is optionally requested exclusively to create a secure backup of your data."}
           </p>
         </div>
         <a 

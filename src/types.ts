@@ -87,3 +87,17 @@ export interface EnabledTrackers {
   tasks: boolean;
   addNapToTotalSleep?: boolean;
 }
+
+export interface BackupData {
+  version: number;
+  logs: LogEntry[];
+  templates?: {
+    medications: { name: string; dosage: string }[];
+    habits: { name: string }[];
+  };
+  config?: {
+    theme: string;
+    enabledTrackers: any;
+    appLang: string;
+  };
+}

@@ -5,12 +5,7 @@ import TrackingForm from "./components/TrackingForm";
 import AnalyticsCharts from "./components/AnalyticsCharts";
 import LocalInsights from "./components/LocalInsights";
 import { translations } from "./utils/translations";
-import { 
-  loginGoogleDrive,
-  backupToDrive, 
-  restoreFromDrive,
-  BackupData
-} from "./utils/googleDrive";
+import { BackupData } from "./types";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "./utils/db";
 import { 
@@ -106,23 +101,8 @@ export default function App() {
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Google Sheets integration state variables
-  const [googleToken, setGoogleToken] = useState<string | null>(() => {
-    return localStorage.getItem("wellbeing_google_token") || null;
-  });
-  const [googleUser, setGoogleUser] = useState<{ email: string; name?: string; picture?: string } | null>(() => {
-    const saved = localStorage.getItem("wellbeing_google_user");
-    return saved ? JSON.parse(saved) : null;
-  });
-  const [detectedClientId, setDetectedClientId] = useState<string>("");
-  const [customClientId, setCustomClientId] = useState<string>(() => {
-    return localStorage.getItem("wellbeing_google_client_id") || "";
-  });
-  const [sheetId, setSheetId] = useState<string>(() => {
-    return localStorage.getItem("wellbeing_spreadsheet_id") || "";
-  });
+  // Sync state variable
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
-  const [showSheetsConfig, setShowSheetsConfig] = useState<boolean>(false);
   const [showPurposeBanner, setShowPurposeBanner] = useState<boolean>(() => {
     return localStorage.getItem("wellbeing_hide_purpose") !== "true";
   });
@@ -134,27 +114,6 @@ export default function App() {
   // PWA state variables
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isPWA, setIsPWA] = useState<boolean>(false);
-
-  // Dynamic user profile fetching helper
-  const fetchUserProfile = async (token: string) => {
-    try {
-      const res = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const userInfo = {
-          email: data.email || "",
-          name: data.name || "Life Tracker & Analytics",
-          picture: data.picture || undefined
-        };
-        setGoogleUser(userInfo);
-        localStorage.setItem("wellbeing_google_user", JSON.stringify(userInfo));
-      }
-    } catch (e) {
-      console.error("Error fetching Google profile:", e);
-    }
-  };
 
 
   // Synchronize theme with document class list
@@ -263,36 +222,9 @@ export default function App() {
     setTimeout(() => setToastMessage(null), 4000);
   };
 
-  // Google Sheets sync actions
-  const handleConnectGoogle = async () => {
-    const activeClientId = customClientId || detectedClientId || (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID;
-    if (!activeClientId) {
-      triggerToast(lang === "es" 
-        ? "Por favor, ingresa tu Google Client ID en la configuración para continuar." 
-        : "Please enter your Google Client ID under setup to keep going."
-      );
-      setShowSheetsConfig(true);
-      return;
-    }
-    try {
-      const token = await loginGoogleDrive(activeClientId);
-      setGoogleToken(token);
-      localStorage.setItem("wellbeing_google_token", token);
-      triggerToast(lang === "es" ? "Conectado a Google exitosamente! 🎉" : "Connected to Google successfully! 🎉");
-      await fetchUserProfile(token);
-    } catch (err: any) {
-      console.error(err);
-      triggerToast(lang === "es" ? `Error de autenticación: ${err.message}` : `Authentication error: ${err.message}`);
-    }
-  };
-
-
-
-  const handleUploadToDrive = async (customLogs?: LogEntry[]) => {
-    const logsToSync = customLogs || historyLogs;
-    if (!googleToken) return;
-    
-    setIsSyncing(true);
+  // Data Export/Import actions
+  const handleExportData = () => {
+    const logsToSync = historyLogs;
     try {
       const backupData: BackupData = {
         version: 2,
@@ -307,74 +239,76 @@ export default function App() {
           appLang: lang
         }
       };
-      await backupToDrive(googleToken, backupData);
-      triggerToast(lang === "es" ? "¡Respaldo guardado en Google Drive! 🚀" : "Backup uploaded to Google Drive! 🚀");
+      
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "lifetracker_backup.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      triggerToast(lang === "es" ? "¡Respaldo exportado con éxito! 🚀" : "Backup exported successfully! 🚀");
     } catch (err: any) {
       console.error(err);
-      if (err.message?.includes("401") || err.message?.includes("unauthorized") || err.message?.includes("expired")) {
-        setGoogleToken(null);
-        setGoogleUser(null);
-        triggerToast(lang === "es" ? "Sesión de Google expirada, conéctate de nuevo." : "Google session expired. Please connect again.");
-      } else {
-        triggerToast(lang === "es" ? `Error al subir: ${err.message}` : `Sync error: ${err.message}`);
-      }
-    } finally {
-      setIsSyncing(false);
+      triggerToast(lang === "es" ? `Error al exportar: ${err.message}` : `Export error: ${err.message}`);
     }
   };
 
-  const handleDownloadFromDrive = async () => {
-    if (!googleToken) return;
+  const handleImportData = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
     const confirmMsg = lang === "es"
-      ? "¿Estás seguro que deseas descargar el respaldo de Google Drive? Esto puede sobrescribir tus registros locales actuales."
-      : "Are you sure you want to download logs from Google Drive? This might overwrite some of your current local logs.";
+      ? "¿Estás seguro que deseas importar este respaldo? Esto puede sobrescribir tus registros locales actuales."
+      : "Are you sure you want to import this backup? This might overwrite some of your current local logs.";
+    
     if (window.confirm(confirmMsg)) {
       setIsSyncing(true);
-      try {
-        const pulled = await restoreFromDrive(googleToken);
-        const backupData = pulled as BackupData;
-        
-        if (backupData.logs) await db.logs.bulkPut(backupData.logs);
-        
-        if (backupData.templates) {
-          if (backupData.templates.medications) {
-            setMedicationTemplate(backupData.templates.medications);
-            localStorage.setItem("wellbeing_meds_template", JSON.stringify(backupData.templates.medications));
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        try {
+          const content = event.target?.result as string;
+          const backupData = JSON.parse(content) as BackupData;
+          
+          if (backupData.logs) await db.logs.bulkPut(backupData.logs);
+          
+          if (backupData.templates) {
+            if (backupData.templates.medications) {
+              setMedicationTemplate(backupData.templates.medications);
+              localStorage.setItem("wellbeing_meds_template", JSON.stringify(backupData.templates.medications));
+            }
+            if (backupData.templates.habits) {
+              setHabitsTemplate(backupData.templates.habits);
+              localStorage.setItem("wellbeing_habits_template", JSON.stringify(backupData.templates.habits));
+            }
           }
-          if (backupData.templates.habits) {
-            setHabitsTemplate(backupData.templates.habits);
-            localStorage.setItem("wellbeing_habits_template", JSON.stringify(backupData.templates.habits));
+          
+          if (backupData.config) {
+            if (backupData.config.theme) setTheme(backupData.config.theme as "light" | "dark");
+            if (backupData.config.enabledTrackers) setEnabledTrackers(backupData.config.enabledTrackers);
+            if (backupData.config.appLang) {
+              setLang(backupData.config.appLang as "en" | "es");
+              localStorage.setItem("wellbeing_app_lang", backupData.config.appLang);
+            }
           }
-        }
-        
-        if (backupData.config) {
-          if (backupData.config.theme) setTheme(backupData.config.theme as "light" | "dark");
-          if (backupData.config.enabledTrackers) setEnabledTrackers(backupData.config.enabledTrackers);
-          if (backupData.config.appLang) setLang(backupData.config.appLang as "en" | "es");
-        }
 
-        triggerToast(lang === "es" ? `¡Se recuperaron ${backupData.logs.length} registros y configuración! 📥` : `Successfully recovered ${backupData.logs.length} logs and config! 📥`);
-      } catch (err: any) {
-        console.error(err);
-        if (err.message?.includes("401") || err.message?.includes("unauthorized") || err.message?.includes("expired")) {
-          setGoogleToken(null);
-          setGoogleUser(null);
-          triggerToast(lang === "es" ? "Sesión de Google expirada, conéctate de nuevo." : "Google session expired. Please connect again.");
-        } else {
-          triggerToast(lang === "es" ? `Error al descargar: ${err.message}` : `Download error: ${err.message}`);
+          triggerToast(lang === "es" ? `¡Se recuperaron ${backupData.logs?.length || 0} registros y configuración! 📥` : `Successfully recovered ${backupData.logs?.length || 0} logs and config! 📥`);
+        } catch (err: any) {
+          console.error(err);
+          triggerToast(lang === "es" ? `Error al importar: archivo inválido o corrupto.` : `Import error: invalid or corrupted file.`);
+        } finally {
+          setIsSyncing(false);
+          // Reset file input
+          e.target.value = '';
         }
-      } finally {
-        setIsSyncing(false);
-      }
+      };
+      reader.readAsText(file);
+    } else {
+      e.target.value = ''; // Reset if cancelled
     }
-  };
-
-  const handleDisconnectGoogle = () => {
-    setGoogleToken(null);
-    setGoogleUser(null);
-    localStorage.removeItem("wellbeing_google_token");
-    localStorage.removeItem("wellbeing_google_user");
-    triggerToast(lang === "es" ? "Desconectado de Google." : "Disconnected from Google.");
   };
 
   // Toggle language and update state & storage
@@ -401,35 +335,7 @@ export default function App() {
     await db.logs.put(updatedEntry);
     triggerToast(`${t.toastSaved} ${updatedEntry.date}!`);
 
-    // Fully automated background sync upon saving logs!
-    if (googleToken) {
-      setIsSyncing(true);
-      try {
-        const currentLogs = await db.logs.toArray();
-        const backupData: BackupData = {
-          version: 2,
-          logs: currentLogs,
-          templates: {
-            medications: medicationTemplate,
-            habits: habitsTemplate
-          },
-          config: {
-            theme,
-            enabledTrackers,
-            appLang: lang
-          }
-        };
-        await backupToDrive(googleToken, backupData);
-        triggerToast(lang === "es" 
-          ? "🔄 ¡Respaldo automático en Google Drive!" 
-          : "🔄 Automatically backed up to Google Drive!"
-        );
-      } catch (err: any) {
-        console.error("Autosave background error:", err);
-      } finally {
-        setIsSyncing(false);
-      }
-    }
+
   };
 
   // Add medication to general template
@@ -757,8 +663,8 @@ export default function App() {
               </h2>
               <p className="text-xs sm:text-sm text-indigo-700/80 dark:text-indigo-300/80 font-sans mt-1.5 leading-relaxed">
                 {lang === "es" 
-                  ? "El propósito de esta aplicación es ayudarte a registrar tus hábitos diarios, estado de ánimo, rutinas y calidad de sueño. Todos los datos se almacenan y analizan localmente en tu dispositivo. Además, la aplicación solicita acceso a tu Google Drive de forma opcional exclusivamente para crear y mantener un archivo de respaldo seguro con tu información."
-                  : "The purpose of this application is to help you track your daily habits, mood, routines, and sleep quality. All data is stored locally on your device. Additionally, the application optionally requests access to your Google Drive exclusively to create and maintain a secure backup file of your data."}
+                  ? "El propósito de esta aplicación es ayudarte a registrar tus hábitos diarios, estado de ánimo, rutinas y calidad de sueño. Todos los datos se almacenan y analizan localmente en tu dispositivo."
+                  : "The purpose of this application is to help you track your daily habits, mood, routines, and sleep quality. All data is stored locally on your device."}
               </p>
               <div className="mt-2">
                 <a 
@@ -1463,104 +1369,50 @@ export default function App() {
                 </div>
               </div>
 
-              {/* 4. GOOGLE SHEETS CONNECTION */}
+              {/* 4. LOCAL BACKUP (JSON EXPORT/IMPORT) */}
               <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4 shadow-3xs">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="space-y-1">
                     <h3 className="font-sans font-bold text-sm text-slate-800 flex items-center gap-2">
                       <Database className="w-4 h-4 text-indigo-500" />
-                      {lang === "es" ? "Respaldo en Google Drive" : "Google Drive Backup"}
+                      {lang === "es" ? "Respaldo Local (JSON)" : "Local Backup (JSON)"}
                     </h3>
                     <p className="text-xs text-slate-500 font-sans leading-relaxed">
                       {lang === "es"
-                        ? "Respalda tus registros de bienestar de forma local e instantánea, y sincroniza automáticamente un archivo seguro en tu Google Drive."
-                        : "Backup your wellness records locally and instantly, and automatically sync a secure file to your Google Drive."}
+                        ? "Respalda tus registros de bienestar descargando un archivo seguro en tu dispositivo."
+                        : "Backup your wellness records by downloading a secure file to your device."}
                     </p>
                     <p className="text-[11px] text-indigo-600 dark:text-indigo-300 bg-indigo-50/50 dark:bg-indigo-900/40 p-2 rounded-lg font-sans leading-relaxed mt-2 border border-indigo-100/50 dark:border-indigo-800/50">
                       {lang === "es"
-                        ? "💡 Recomendado: Te protege de perder datos si borras el caché del navegador y te permite usar la app en múltiples dispositivos."
-                        : "💡 Recommended: Protects against accidental browser cache clears and allows you to use the app across multiple devices."}
+                        ? "💡 Recomendado: Haz esto periódicamente para protegerte de perder datos si borras el caché del navegador."
+                        : "💡 Recommended: Do this periodically to protect against accidental browser cache clears."}
                     </p>
                   </div>
-
-                  {!googleToken ? (
-                    <button
-                      onClick={handleConnectGoogle}
-                      disabled={isSyncing}
-                      className="flex items-center gap-2.5 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 text-slate-700 px-4 py-2 rounded-xl font-sans text-xs font-semibold shadow-xs cursor-pointer transition-all shrink-0 active:scale-95"
-                    >
-                      {isSyncing ? (
-                        <RefreshCw className="w-4 h-4 animate-spin text-slate-400" />
-                      ) : (
-                        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="w-4 h-4 shrink-0">
-                          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
-                          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
-                          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
-                          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
-                        </svg>
-                      )}
-                      <span>
-                        {isSyncing ? "..." : (lang === "es" ? "Acceder con Google" : "Sign in with Google")}
-                      </span>
-                    </button>
-                  ) : (
-                    <div className="flex items-center gap-2 shrink-0">
-                      {googleUser && (
-                        <div className="flex items-center gap-1.5 mr-1 text-right hidden sm:block">
-                          <span className="text-xs font-sans font-semibold text-slate-800 block">
-                            {googleUser.name}
-                          </span>
-                          <span className="text-[9px] text-slate-400 font-sans block leading-none">
-                            {googleUser.email}
-                          </span>
-                        </div>
-                      )}
-                      <button
-                        type="button"
-                        onClick={handleDisconnectGoogle}
-                        className="py-1.5 px-3 border border-slate-100 hover:border-slate-200 rounded-lg text-[10px] font-sans text-slate-400 hover:text-slate-600 transition-colors cursor-pointer shrink-0"
-                      >
-                        {lang === "es" ? "Salir" : "Sign out"}
-                      </button>
-                    </div>
-                  )}
                 </div>
 
-                {googleToken && (
-                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-4.5 space-y-3.5 text-xs font-sans animate-fade-in">
-                    <p className="text-slate-500 text-[11px]">
-                      {lang === "es" 
-                        ? "Tus datos se guardan ultrarrápido en tu dispositivo. El respaldo creará un archivo \`lifetracker_backup.json\` en tu Google Drive."
-                        : "Your data is saved ultra-fast locally. The backup will create a \`lifetracker_backup.json\` file in your Google Drive."}
-                    </p>
-                    <div className="grid grid-cols-2 gap-2 pt-1">
-                      <button
-                        onClick={() => handleUploadToDrive()}
-                        disabled={isSyncing}
-                        className="py-2.5 px-2 bg-indigo-600 hover:bg-indigo-750 text-white font-semibold text-[11px] rounded-lg cursor-pointer flex items-center justify-center gap-1 shadow-3xs"
-                      >
-                        <Upload className="w-3 h-3" />
-                        {lang === "es" ? "Forzar Respaldo" : "Force Backup"}
-                      </button>
+                <div className="bg-slate-50 border border-slate-100 rounded-xl p-4.5 space-y-3.5 text-xs font-sans animate-fade-in">
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <button
+                      onClick={handleExportData}
+                      disabled={isSyncing}
+                      className="py-2.5 px-2 bg-indigo-600 hover:bg-indigo-750 text-white font-semibold text-[11px] rounded-lg cursor-pointer flex items-center justify-center gap-1 shadow-3xs"
+                    >
+                      <Download className="w-3 h-3" />
+                      {lang === "es" ? "Exportar Copia" : "Export Backup"}
+                    </button>
 
-                      <button
-                        onClick={handleDownloadFromDrive}
-                        disabled={isSyncing}
-                        className="py-2.5 px-2 bg-white border border-slate-200 hover:bg-slate-100/50 text-slate-600 font-semibold text-[11px] rounded-lg cursor-pointer flex items-center justify-center gap-1"
-                      >
-                        <Download className="w-3 h-3 text-emerald-500" />
-                        {lang === "es" ? "Restaurar" : "Restore"}
-                      </button>
-                    </div>
-
-                    {isSyncing && (
-                      <div className="flex items-center gap-2 text-indigo-600 font-semibold text-[11px] animate-pulse">
-                        <RefreshCw className="w-3 h-3 animate-spin" />
-                        <span>Sincronizando...</span>
-                      </div>
-                    )}
+                    <label className="py-2.5 px-2 bg-white border border-slate-200 hover:bg-slate-100/50 text-slate-600 font-semibold text-[11px] rounded-lg cursor-pointer flex items-center justify-center gap-1">
+                      <Upload className="w-3 h-3 text-emerald-500" />
+                      {lang === "es" ? "Restaurar desde archivo" : "Restore from file"}
+                      <input
+                        type="file"
+                        accept=".json"
+                        onChange={handleImportData}
+                        className="hidden"
+                      />
+                    </label>
                   </div>
-                )}
+                </div>
               </div>
 
             </div>
@@ -1582,8 +1434,8 @@ export default function App() {
         <div className="mt-2 mb-4 max-w-2xl mx-auto px-4 text-slate-500 dark:text-slate-400 leading-relaxed">
           <p>
             {lang === "es" 
-              ? "El propósito de esta aplicación es ayudarte a registrar tus hábitos diarios, estado de ánimo, rutinas y calidad de sueño. Todos los datos se almacenan localmente. La integración con Google Drive se solicita opcionalmente de forma exclusiva para crear un respaldo de seguridad de tus datos." 
-              : "The purpose of this application is to help you track your daily habits, mood, routines, and sleep quality. All data is stored locally. Google Drive integration is optionally requested exclusively to create a secure backup of your data."}
+              ? "El propósito de esta aplicación es ayudarte a registrar tus hábitos diarios, estado de ánimo, rutinas y calidad de sueño. Todos los datos se almacenan localmente en tu dispositivo." 
+              : "The purpose of this application is to help you track your daily habits, mood, routines, and sleep quality. All data is stored locally on your device."}
           </p>
         </div>
         <a 

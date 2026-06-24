@@ -8,7 +8,7 @@ This file provides context and guidelines for AI coding assistants (like Gemini)
 ### Core Features
 - **Daily Tracking**: Users log their Mood, Mood Tags (Feeling Tags), Sleep (duration, quality, bedtime, waketime), Focus/Concentration, Medications, and Daily Habits.
 - **Analytics & Insights**: Generates statistics and correlation charts from the tracked data. Emphasizes *individual impact* (e.g., how a specific habit or medication affects mood, sleep, and the occurrence of qualitative mood tags) rather than aggregated daily compliance percentages.
-- **Local Data Export/Import**: Allows users to manually export and import their well-being logs and configuration as a secure JSON file (`lifetracker_backup.json`).
+- **Local & Cloud Data Export/Import**: Allows users to manually export and import their well-being logs locally via a secure JSON file (`lifetracker_backup.json`), and automatically syncs across devices using the Bring-Your-Own-Data (BYOD) `remoteStorage.js` protocol.
 - **Bilingual & Theming**: Supports English and Spanish, alongside Light and Dark modes.
 
 ## Directory Structure
@@ -25,9 +25,11 @@ The workspace is organized as a standard Vite + React project (100% Static Front
     ├── components/         # UI Components
     │   ├── TrackingForm.tsx    # Form to input daily well-being metrics
     │   ├── AnalyticsCharts.tsx # Data visualization logic (Recharts)
-    │   └── LocalInsights.tsx   # Offline insights and correlations
+    │   ├── LocalInsights.tsx   # Offline insights and correlations
+    │   └── RemoteStorageWidget.tsx # remoteStorage connection UI
     └── utils/              # Helper modules
         ├── db.ts               # Dexie IndexedDB local-first database schema
+        ├── remoteStorage.ts    # BYOD cloud synchronization logic
         ├── translations.ts     # i18n dictionary (English/Spanish)
         ├── helpers.ts          # Utility functions
         └── heuristics/         # Mathematics, heuristics, and scoring engines
@@ -37,6 +39,7 @@ The workspace is organized as a standard Vite + React project (100% Static Front
 - **Core**: React 19, TypeScript, Node.js
 - **Build Tool**: Vite
 - **Database**: Dexie.js (IndexedDB wrapper for Local-First data storage)
+- **Cloud Sync (BYOD)**: remoteStorage.js (`remotestoragejs`, `remotestorage-widget`)
 - **Styling**: Tailwind CSS v4 (`@tailwindcss/vite`)
 - **Icons**: Lucide React (`lucide-react`)
 - **Animations**: Framer Motion (`motion`)

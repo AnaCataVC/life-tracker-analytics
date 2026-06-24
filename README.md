@@ -25,11 +25,12 @@ Life Tracker Analytics is a comprehensive, privacy-focused React web application
 - **Animations:** Framer Motion (`motion`)
 - **Data Visualization:** Recharts
 - **Icons:** Lucide React
-- **Local DB / Storage:** Dexie.js (IndexedDB wrapper), Manual JSON Export/Import
+- **Local DB / Storage:** Dexie.js (IndexedDB wrapper), Manual JSON Export/Import, remoteStorage.js (BYOD Cloud Sync)
 
 ### 3. Key Learnings
 Building this application provided valuable experience in several areas:
 - **Data Management Without Complex DBs:** Learning how to manage and store simple data securely and locally (Dexie.js) without relying on complex external databases.
+- **BYOD Cloud Architecture:** Adopting a "Bring-Your-Own-Data" model via remoteStorage.js to achieve cross-platform synchronization without relying on proprietary BaaS, avoiding vendor lock-in and bureaucratic API reviews (e.g., Google OAuth Trust & Safety).
 - **Frontend Logic:** Implementing simple calculations and aggregations directly in JavaScript/TypeScript, reducing the need for a Python backend (which is my usual strong suit).
 - **User Experience (UX):** Enhancing the UX for daily data entry and tracking.
 - **Data Visualization:** Applying my data visualization knowledge to the web using Recharts to create interactive and meaningful charts, avoiding misleading calculations.
@@ -55,11 +56,12 @@ Life Tracker Analytics es una aplicación web integral en React, enfocada en la 
 - **Animaciones:** Framer Motion (`motion`)
 - **Visualización de Datos:** Recharts
 - **Iconos:** Lucide React
-- **Base de Datos Local:** Dexie.js (IndexedDB), Exportación e Importación Manual de JSON
+- **Base de Datos Local:** Dexie.js (IndexedDB), Exportación e Importación Manual de JSON, remoteStorage.js (BYOD Sincronización en la Nube)
 
 ### 3. Aprendizajes Destacados
 La creación de esta aplicación me permitió profundizar en:
 - **Manejo de Datos Simples:** Almacenar y manejar datos localmente (Dexie.js) sin necesidad de recurrir a bases de datos complejas.
+- **Arquitectura de Nube BYOD:** Adoptar un modelo "Bring-Your-Own-Data" mediante remoteStorage.js para lograr la sincronización multiplataforma sin depender de un BaaS propietario, evitando el "vendor lock-in" y las revisiones burocráticas de APIs (ej. Google OAuth Trust & Safety).
 - **Lógica en el Frontend:** Realizar cálculos sencillos directamente en el cliente (JS/TS), lo cual reduce la necesidad de usar un backend en Python (que es mi fuerte habitual).
 - **Experiencia de Usuario (UX):** Mejorar el flujo de entrada de datos diarios.
 - **Visualización de Datos:** Aplicar mis conocimientos analíticos y de visualización utilizando Recharts para generar gráficos interactivos de impacto real, en lugar de calculos engañosos.

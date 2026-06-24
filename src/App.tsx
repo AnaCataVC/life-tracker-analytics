@@ -15,13 +15,11 @@ import {
   Calendar, 
   User, 
   Compass, 
-  RefreshCw,
   LineChart,
   Globe,
   Database,
   Download,
   Upload,
-  LogOut,
   Info,
   AlertTriangle,
   Plus,
@@ -908,7 +906,6 @@ export default function App() {
             <div className="bg-white p-1 rounded-2xl border border-slate-100 shadow-2xs">
               <LocalInsights 
                 history={historyLogs} 
-                googleName={googleUser?.name} 
                 onCommitHabit={handleCommitHabit}
                 lang={lang}
                 enabledTrackers={enabledTrackers}

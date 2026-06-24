@@ -23,13 +23,12 @@ import {
 
 interface LocalInsightsProps {
   history: LogEntry[];
-  googleName?: string;
-  onCommitHabit: (habitName: string) => void;
+  onCommitHabit?: (habitName: string) => void;
   lang: "en" | "es";
   enabledTrackers: EnabledTrackers;
 }
 
-export default function LocalInsights({ history, googleName, onCommitHabit, lang, enabledTrackers }: LocalInsightsProps) {
+export default function LocalInsights({ history, onCommitHabit, lang, enabledTrackers }: LocalInsightsProps) {
   const t = translations[lang];
   const [calculationTrigger, setCalculationTrigger] = useState<number>(0);
 
@@ -188,11 +187,6 @@ export default function LocalInsights({ history, googleName, onCommitHabit, lang
               <p className="text-xs text-slate-600 dark:text-slate-300 font-sans leading-relaxed select-text">
                 {insights.overallSummary}
               </p>
-              {googleName && (
-                <div className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
-                  {t.prepareFor.replace("{name}", googleName)}
-                </div>
-              )}
             </div>
           </div>
 

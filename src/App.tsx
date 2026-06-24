@@ -8,6 +8,8 @@ import { translations } from "./utils/translations";
 import { BackupData } from "./types";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "./utils/db";
+import RemoteStorageWidget from "./components/RemoteStorageWidget";
+import { rs, pushBackupToRS, pullBackupFromRS } from "./utils/remoteStorage";
 import { 
   Settings, 
   Trash2, 
@@ -39,7 +41,20 @@ export default function App() {
   // 1. Language state
   const [lang, setLang] = useState<"en" | "es">("es");
 
-  // 2. Theme state: light or high-contrast dark
+  // 2. remoteStorage state
+  const [isRSConnected, setIsRSConnected] = useState<boolean>(false);
+
+  useEffect(() => {
+    rs.on('connected', () => {
+      setIsRSConnected(true);
+      triggerToast(lang === "es" ? "Nube personal conectada" : "Personal cloud connected");
+    });
+    rs.on('disconnected', () => {
+      setIsRSConnected(false);
+    });
+  }, [lang]);
+
+  // 3. Theme state: light or high-contrast dark
   const [theme, setTheme] = useState<"light" | "dark">(() => {
     try {
       const saved = localStorage.getItem("wellbeing_theme");
@@ -220,23 +235,47 @@ export default function App() {
     setTimeout(() => setToastMessage(null), 4000);
   };
 
+  // Helpers for DRY backup generation and restoration
+  const generateBackupData = (overrideLogs?: LogEntry[]): BackupData => {
+    return {
+      version: 2,
+      logs: overrideLogs || historyLogs || [],
+      templates: {
+        medications: medicationTemplate,
+        habits: habitsTemplate
+      },
+      config: { theme, enabledTrackers, appLang: lang }
+    };
+  };
+
+  const restoreFromBackupData = async (backupData: BackupData) => {
+    if (backupData.logs) await db.logs.bulkPut(backupData.logs);
+    
+    if (backupData.templates) {
+      if (backupData.templates.medications) {
+        setMedicationTemplate(backupData.templates.medications);
+        localStorage.setItem("wellbeing_meds_template", JSON.stringify(backupData.templates.medications));
+      }
+      if (backupData.templates.habits) {
+        setHabitsTemplate(backupData.templates.habits);
+        localStorage.setItem("wellbeing_habits_template", JSON.stringify(backupData.templates.habits));
+      }
+    }
+    
+    if (backupData.config) {
+      if (backupData.config.theme) setTheme(backupData.config.theme as "light" | "dark");
+      if (backupData.config.enabledTrackers) setEnabledTrackers(backupData.config.enabledTrackers);
+      if (backupData.config.appLang) {
+        setLang(backupData.config.appLang as "en" | "es");
+        localStorage.setItem("wellbeing_app_lang", backupData.config.appLang);
+      }
+    }
+  };
+
   // Data Export/Import actions
   const handleExportData = () => {
-    const logsToSync = historyLogs;
     try {
-      const backupData: BackupData = {
-        version: 2,
-        logs: logsToSync,
-        templates: {
-          medications: medicationTemplate,
-          habits: habitsTemplate
-        },
-        config: {
-          theme,
-          enabledTrackers,
-          appLang: lang
-        }
-      };
+      const backupData = generateBackupData();
       
       const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -270,28 +309,7 @@ export default function App() {
         try {
           const content = event.target?.result as string;
           const backupData = JSON.parse(content) as BackupData;
-          
-          if (backupData.logs) await db.logs.bulkPut(backupData.logs);
-          
-          if (backupData.templates) {
-            if (backupData.templates.medications) {
-              setMedicationTemplate(backupData.templates.medications);
-              localStorage.setItem("wellbeing_meds_template", JSON.stringify(backupData.templates.medications));
-            }
-            if (backupData.templates.habits) {
-              setHabitsTemplate(backupData.templates.habits);
-              localStorage.setItem("wellbeing_habits_template", JSON.stringify(backupData.templates.habits));
-            }
-          }
-          
-          if (backupData.config) {
-            if (backupData.config.theme) setTheme(backupData.config.theme as "light" | "dark");
-            if (backupData.config.enabledTrackers) setEnabledTrackers(backupData.config.enabledTrackers);
-            if (backupData.config.appLang) {
-              setLang(backupData.config.appLang as "en" | "es");
-              localStorage.setItem("wellbeing_app_lang", backupData.config.appLang);
-            }
-          }
+          await restoreFromBackupData(backupData);
 
           triggerToast(lang === "es" ? `¡Se recuperaron ${backupData.logs?.length || 0} registros y configuración! 📥` : `Successfully recovered ${backupData.logs?.length || 0} logs and config! 📥`);
         } catch (err: any) {
@@ -306,6 +324,45 @@ export default function App() {
       reader.readAsText(file);
     } else {
       e.target.value = ''; // Reset if cancelled
+    }
+  };
+
+  const handlePushToRS = async () => {
+    setIsSyncing(true);
+    try {
+      const backupData = generateBackupData();
+      await pushBackupToRS(backupData);
+      triggerToast(lang === "es" ? "¡Respaldo subido a la nube! ☁️" : "Backup pushed to cloud! ☁️");
+    } catch (err: any) {
+      console.error(err);
+      triggerToast(lang === "es" ? "Error al subir a la nube." : "Error pushing to cloud.");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handlePullFromRS = async () => {
+    const confirmMsg = lang === "es"
+      ? "¿Restaurar desde la nube personal? Esto sobrescribirá tus datos actuales."
+      : "Restore from personal cloud? This will overwrite your current data.";
+    if (!window.confirm(confirmMsg)) return;
+
+    setIsSyncing(true);
+    try {
+      const backupData = await pullBackupFromRS();
+      if (!backupData) {
+        triggerToast(lang === "es" ? "No se encontró respaldo en la nube." : "No backup found in cloud.");
+        return;
+      }
+      
+      await restoreFromBackupData(backupData);
+
+      triggerToast(lang === "es" ? "¡Datos recuperados de la nube! 📥" : "Data recovered from cloud! 📥");
+    } catch (err: any) {
+      console.error(err);
+      triggerToast(lang === "es" ? "Error al descargar de la nube." : "Error downloading from cloud.");
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -333,7 +390,16 @@ export default function App() {
     await db.logs.put(updatedEntry);
     triggerToast(`${t.toastSaved} ${updatedEntry.date}!`);
 
-
+    // Auto-push to remoteStorage if connected
+    if (isRSConnected) {
+      try {
+        const logsToSync = historyLogs ? [...historyLogs.filter(l => l.date !== updatedEntry.date), updatedEntry] : [updatedEntry];
+        const backupData = generateBackupData(logsToSync);
+        await pushBackupToRS(backupData);
+      } catch (e) {
+        console.error("Autosave RS error:", e);
+      }
+    }
   };
 
   // Add medication to general template
@@ -1412,8 +1478,50 @@ export default function App() {
                 </div>
               </div>
 
-            </div>
+              {/* 5. CLOUD BACKUP (remoteStorage) */}
+              <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4 shadow-3xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <h3 className="font-sans font-bold text-sm text-slate-800 flex items-center gap-2">
+                      <svg className="w-4 h-4 text-sky-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+                      {lang === "es" ? "Respaldo en la Nube (remoteStorage)" : "Cloud Backup (remoteStorage)"}
+                    </h3>
+                    <p className="text-xs text-slate-500 font-sans leading-relaxed">
+                      {lang === "es"
+                        ? "Conecta tu propia nube personal (ej. 5apps.com) para respaldo automático y multiplataforma, 100% privado."
+                        : "Connect your personal cloud (e.g., 5apps.com) for automatic, cross-platform, 100% private backups."}
+                    </p>
+                  </div>
+                </div>
 
+                <div className="bg-slate-50 border border-slate-100 rounded-xl p-4.5 space-y-3.5 text-xs font-sans animate-fade-in flex flex-col items-center">
+                  <RemoteStorageWidget />
+                  
+                  {isRSConnected && (
+                    <div className="w-full grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-200">
+                      <button
+                        onClick={handlePushToRS}
+                        disabled={isSyncing}
+                        className="py-2.5 px-2 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-[11px] rounded-lg cursor-pointer flex items-center justify-center gap-1 shadow-3xs"
+                      >
+                        <Upload className="w-3 h-3" />
+                        {lang === "es" ? "Forzar Subida" : "Force Upload"}
+                      </button>
+
+                      <button
+                        onClick={handlePullFromRS}
+                        disabled={isSyncing}
+                        className="py-2.5 px-2 bg-white border border-slate-200 hover:bg-slate-100/50 text-slate-600 font-semibold text-[11px] rounded-lg cursor-pointer flex items-center justify-center gap-1"
+                      >
+                        <Download className="w-3 h-3 text-emerald-500" />
+                        {lang === "es" ? "Restaurar de Nube" : "Restore from Cloud"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+            </div>
           </div>
         )}
 

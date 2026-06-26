@@ -34,7 +34,9 @@ import {
   Sun,
   Moon,
   Smile,
-  CheckSquare
+  CheckSquare,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 
 export default function App() {
@@ -127,6 +129,7 @@ export default function App() {
   // PWA state variables
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isPWA, setIsPWA] = useState<boolean>(false);
+  const [showAdvancedBackup, setShowAdvancedBackup] = useState<boolean>(false);
 
 
   // Synchronize theme with document class list
@@ -730,16 +733,6 @@ export default function App() {
                   ? "El propósito de esta aplicación es ayudarte a registrar tus hábitos diarios, estado de ánimo, rutinas y calidad de sueño. Todos los datos se almacenan y analizan localmente en tu dispositivo."
                   : "The purpose of this application is to help you track your daily habits, mood, routines, and sleep quality. All data is stored locally on your device."}
               </p>
-              <div className="mt-2">
-                <a 
-                  href="./privacy.html" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 underline underline-offset-2"
-                >
-                  {lang === "es" ? "Ver Política de Privacidad" : "View Privacy Policy"}
-                </a>
-              </div>
             </div>
           </div>
         )}
@@ -1432,13 +1425,13 @@ export default function App() {
                 </div>
               </div>
 
-              {/* 4. LOCAL BACKUP (JSON EXPORT/IMPORT) */}
+              {/* 4. BACKUP (LOCAL & CLOUD) */}
               <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4 shadow-3xs">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="space-y-1">
                     <h3 className="font-sans font-bold text-sm text-slate-800 flex items-center gap-2">
                       <Database className="w-4 h-4 text-indigo-500" />
-                      {lang === "es" ? "Respaldo Local (JSON)" : "Local Backup (JSON)"}
+                      {lang === "es" ? "Respaldo de Datos" : "Data Backup"}
                     </h3>
                     <p className="text-xs text-slate-500 font-sans leading-relaxed">
                       {lang === "es"
@@ -1475,49 +1468,52 @@ export default function App() {
                       />
                     </label>
                   </div>
-                </div>
-              </div>
-
-              {/* 5. CLOUD BACKUP (remoteStorage) */}
-              <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4 shadow-3xs">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <h3 className="font-sans font-bold text-sm text-slate-800 flex items-center gap-2">
-                      <svg className="w-4 h-4 text-sky-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
-                      {lang === "es" ? "Respaldo en la Nube (remoteStorage)" : "Cloud Backup (remoteStorage)"}
-                    </h3>
-                    <p className="text-xs text-slate-500 font-sans leading-relaxed">
-                      {lang === "es"
-                        ? "Conecta tu propia nube personal (ej. 5apps.com) para respaldo automático y multiplataforma, 100% privado."
-                        : "Connect your personal cloud (e.g., 5apps.com) for automatic, cross-platform, 100% private backups."}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 border border-slate-100 rounded-xl p-4.5 space-y-3.5 text-xs font-sans animate-fade-in flex flex-col items-center">
-                  <RemoteStorageWidget />
                   
-                  {isRSConnected && (
-                    <div className="w-full grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-200">
-                      <button
-                        onClick={handlePushToRS}
-                        disabled={isSyncing}
-                        className="py-2.5 px-2 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-[11px] rounded-lg cursor-pointer flex items-center justify-center gap-1 shadow-3xs"
-                      >
-                        <Upload className="w-3 h-3" />
-                        {lang === "es" ? "Forzar Subida" : "Force Upload"}
-                      </button>
+                  <div className="border-t border-slate-200 mt-3 pt-3">
+                    <button
+                      onClick={() => setShowAdvancedBackup(!showAdvancedBackup)}
+                      className="w-full flex items-center justify-between text-slate-500 hover:text-slate-700 font-medium text-xs cursor-pointer px-2 py-1.5 rounded-lg hover:bg-slate-100/50 transition-colors"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <svg className="w-3.5 h-3.5 text-sky-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+                        {lang === "es" ? "Respaldo Avanzado (Nube Personal)" : "Advanced Backup (Personal Cloud)"}
+                      </span>
+                      {showAdvancedBackup ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </button>
 
-                      <button
-                        onClick={handlePullFromRS}
-                        disabled={isSyncing}
-                        className="py-2.5 px-2 bg-white border border-slate-200 hover:bg-slate-100/50 text-slate-600 font-semibold text-[11px] rounded-lg cursor-pointer flex items-center justify-center gap-1"
-                      >
-                        <Download className="w-3 h-3 text-emerald-500" />
-                        {lang === "es" ? "Restaurar de Nube" : "Restore from Cloud"}
-                      </button>
+                    <div className={`mt-3 bg-white border border-slate-100 rounded-xl p-4 animate-fade-in flex-col items-center shadow-3xs ${showAdvancedBackup ? 'flex' : 'hidden'}`}>
+                      <div className="w-full mb-3 text-center">
+                        <p className="text-xs text-slate-500 font-sans leading-relaxed">
+                          {lang === "es"
+                            ? "Conecta tu propia nube personal (ej. 5apps.com) para respaldo automático y multiplataforma, 100% privado."
+                            : "Connect your personal cloud (e.g., 5apps.com) for automatic, cross-platform, 100% private backups."}
+                        </p>
+                      </div>
+                      <RemoteStorageWidget />
+                      
+                      {isRSConnected && (
+                        <div className="w-full grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-100">
+                          <button
+                            onClick={handlePushToRS}
+                            disabled={isSyncing}
+                            className="py-2.5 px-2 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-[11px] rounded-lg cursor-pointer flex items-center justify-center gap-1 shadow-3xs"
+                          >
+                            <Upload className="w-3 h-3" />
+                            {lang === "es" ? "Forzar Subida" : "Force Upload"}
+                          </button>
+
+                          <button
+                            onClick={handlePullFromRS}
+                            disabled={isSyncing}
+                            className="py-2.5 px-2 bg-white border border-slate-200 hover:bg-slate-100/50 text-slate-600 font-semibold text-[11px] rounded-lg cursor-pointer flex items-center justify-center gap-1"
+                          >
+                            <Download className="w-3 h-3 text-emerald-500" />
+                            {lang === "es" ? "Restaurar de Nube" : "Restore from Cloud"}
+                          </button>
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
 
@@ -1529,7 +1525,6 @@ export default function App() {
       
       {/* Footer */}
       <footer className="bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800/80 mt-12 py-6 text-center text-xs text-slate-400 font-sans relative">
-        <div id="privacy-policy" className="absolute -top-20"></div>
         <p>
           © 2026 {lang === "es" ? "Desarrollado por " : "Developed by "}
           <a href="https://ana-catalina.com" target="_blank" rel="noopener noreferrer" className="text-indigo-500 dark:text-indigo-400 hover:text-indigo-600 transition-colors font-semibold">
@@ -1543,14 +1538,6 @@ export default function App() {
               : "The purpose of this application is to help you track your daily habits, mood, routines, and sleep quality. All data is stored locally on your device."}
           </p>
         </div>
-        <a 
-          href={lang === "es" ? "./privacy.html#es" : "./privacy.html#en"}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-slate-500 dark:text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors underline decoration-slate-300 dark:decoration-slate-700 hover:decoration-indigo-300 cursor-pointer inline-block"
-        >
-          {lang === "es" ? "Política de Privacidad y Términos de Servicio" : "Privacy Policy & Terms of Service"}
-        </a>
       </footer>
 
 

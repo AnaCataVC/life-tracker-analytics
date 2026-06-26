@@ -6,23 +6,20 @@ export default function RemoteStorageWidget() {
   const widgetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Initialize the official remoteStorage widget
-    const widget = new Widget(rs, {
-      leaveOpen: false,
-      autoCloseAfter: 2000
-    });
+    if (widgetRef.current && widgetRef.current.children.length === 0) {
+      // Initialize the official remoteStorage widget only if not already attached
+      const widget = new Widget(rs, {
+        leaveOpen: false,
+        autoCloseAfter: 2000
+      });
 
-    // Attach it to the specific DOM node
-    if (widgetRef.current) {
+      // Attach it to the specific DOM node
       widget.attach(widgetRef.current);
     }
 
     return () => {
-      // Cleanup: Since the widget might not have a clean detach method, 
-      // we can clear the inner HTML if the component unmounts to prevent duplicates.
-      if (widgetRef.current) {
-        widgetRef.current.innerHTML = '';
-      }
+      // Intentionally do not clear innerHTML here. 
+      // This allows the widget to survive React Strict Mode's mount/unmount cycle without duplicating.
     };
   }, []);
 

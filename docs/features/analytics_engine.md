@@ -2,101 +2,177 @@
 
 This document outlines the mathematical formulas, statistical methods, and heuristic logic used within the Life Tracker Analytics application to derive user insights, generate correlations, and calculate well-being scores. All calculations are performed entirely client-side (offline).
 
+---
+
 ## 0. Core Philosophy: Individual Impact over Aggregate Compliance
 
-A fundamental design decision in Life Tracker Analytics is that **we do not evaluate well-being based on aggregate compliance ratios** (e.g., "percentage of daily tasks completed" or "percentage of daily medications taken"). 
+A fundamental design decision in Life Tracker Analytics is that **we do not evaluate well-being based on aggregate compliance ratios** (e.g., "percentage of daily tasks completed" or "percentage of daily medications taken").
 
-Evaluating raw percentages can be misleading and psychologically counterproductive. Completing 10 trivial tasks shouldn't artificially inflate your wellness score, nor should taking a large quantity of different medications imply a better focus metric. 
+Evaluating raw percentages can be misleading and psychologically counterproductive. Completing 10 trivial tasks shouldn't artificially inflate your wellness score, nor should taking a large quantity of different medications imply a better focus metric.
 
 Instead, the analytics engine strictly evaluates **individual impact**. The system isolates each specific habit, task, and medication, comparing the user's metrics (Mood, Focus) on days it was completed versus days it was not. This ensures that the application identifies the *true* underlying value of each specific action rather than rewarding the simple act of checking off boxes.
 
-## 1. Descriptive Statistics & Baselines
-
-### 1.1 Simple Averages (Means)
-For any metric $X$ (e.g., Mood, Sleep Duration, Focus, Sleep Quality) recorded over $N$ days, the baseline average is calculated as the standard arithmetic mean:
-$$ \bar{X} = \frac{1}{N} \sum_{i=1}^{N} X_i $$
-
-
+> **Important:** All results are **associations**, not causes. Correlation does not imply causation. The engine explicitly uses associative language in all UI text.
 
 ---
 
-## 2. Statistical Grouping & Heuristic Correlations
+## 1. Core Statistical Foundation (`statistics.ts`)
 
-Rather than using complex regression models, the application uses group-based A/B testing logic to discover and present actionable correlations to the user. It splits the historical dataset into two distinct groups based on predefined threshold conditions and compares the means of a target variable.
+All statistical primitives are centralized in `src/utils/heuristics/statistics.ts` as pure, side-effect-free functions.
 
-### 2.1 Sleep Duration vs. Mood Rating
-- **Condition:** High Sleep Days ($X \ge 7.5$ hours) vs. Low Sleep Days ($X < 7.5$ hours).
-- **Target:** Average Mood.
-- **Math:** $\Delta = \bar{\text{Mood}}_{\text{HighSleep}} - \bar{\text{Mood}}_{\text{LowSleep}}$
-- **Threshold:** If $\Delta > 0.3$, the correlation is labeled as positive. If $\Delta < -0.3$, it is negative. Otherwise, it is considered neutral.
+### 1.1 Arithmetic Mean
+For any metric $X$ recorded over $N$ days:
+$$\bar{X} = \frac{1}{N} \sum_{i=1}^{N} X_i$$
 
-### 2.2 Sleep Quality vs. Concentration (Focus)
-- **Condition:** High Quality Days ($X \ge 7/10$) vs. Low Quality Days ($X < 7/10$).
-- **Target:** Average Concentration.
-- **Math:** $\Delta = \bar{\text{Focus}}_{\text{HighQual}} - \bar{\text{Focus}}_{\text{LowQual}}$
-- **Threshold:** A difference of $\pm 0.3$ points determines the correlation direction.
+Returns 0 for empty arrays (division-by-zero guard).
 
+### 1.2 Population Standard Deviation
+$$\sigma = \sqrt{\frac{1}{N} \sum_{i=1}^{N} (X_i - \bar{X})^2}$$
 
+Returns 0 for arrays with fewer than 2 elements.
+
+### 1.3 Minimum Sample Size Guard
+A constant `MIN_SAMPLE_SIZE = 5` enforces that **both comparison groups must have at least 5 data points** before any insight is computed. Groups with fewer entries receive `confidence: "insufficient"` and all deltas are zeroed out.
+
+This prevents misleading insights derived from N=1 or N=2 observations — a critical safeguard for a personal health-tracking context.
+
+### 1.4 Confidence Tier (`ConfidenceLevel`)
+
+Every computed insight receives a confidence tier based on sample sizes and effect magnitude:
+
+| Tier | Condition |
+|---|---|
+| `"insufficient"` | Either group has < 5 entries |
+| `"low"` | Effect size (Cohen's d) < 0.2 — negligible difference |
+| `"moderate"` | Effect size 0.2–0.5, OR both groups have 5–9 entries |
+| `"high"` | Effect size ≥ 0.5 AND both groups have ≥ 10 entries |
+
+Insights with `"insufficient"` or `"low"` confidence are **never shown** in the UI to avoid noise.
+
+---
+
+## 2. Pearson Correlation (Continuous Variables)
+
+Rather than splitting data into arbitrary binary buckets (e.g., "≥7.5h" vs "<7.5h"), the engine uses the **Pearson correlation coefficient** to measure the linear relationship between two continuous variables across the full history.
+
+$$r = \frac{\text{Cov}(X, Y)}{\sigma_X \cdot \sigma_Y} = \frac{\frac{1}{N}\sum_{i=1}^{N}(X_i - \bar{X})(Y_i - \bar{Y})}{\sigma_X \cdot \sigma_Y}$$
+
+Where $r \in [-1, 1]$:
+- $r \approx +1$: strong positive linear association
+- $r \approx -1$: strong negative linear association
+- $r \approx 0$: no linear relationship
+
+Returns 0 if either variable has zero variance, or if $N < 5$.
+
+### 2.1 Sleep Duration ↔ Mood Rating
+
+- **Variables:** `getTotalSleep(entry)` (hours) and `entry.mood` (0–10)
+- **Result:** Pearson $r$ displayed as `r = +0.72` in the correlation description
+- **Direction thresholds:** `|r| ≥ 0.2` declares a non-neutral trend
+
+### 2.2 Sleep Quality ↔ Concentration (Focus)
+
+- **Variables:** `entry.sleepQuality` (0–10) and `entry.concentration` (0–10)
+- **Result:** Pearson $r$ displayed inline
+- **Note:** Negative $r$ includes a reverse-causality disclaimer in the UI
+
+> **Why Pearson instead of bins?** Binary thresholds (e.g., ≥7.5h) are arbitrary and discard the continuous nature of the data. Pearson uses every data point and its actual value, making it more robust and honest about the strength of the relationship.
+
+---
 
 ## 3. The Well-Being Index Score Formula
 
-The global Well-Being Score is a dynamic, weighted index normalized to a 1-100 scale. It aggregates key pillars of the user's logged data to provide a single, holistic health metric.
+The global Well-Being Score is a dynamic, weighted index normalized to a 1–100 scale. It aggregates key pillars of the user's logged data to provide a single, holistic metric.
 
-1. **Mood Score ($W_1 = 50\%$):** 
-   $$ S_{\text{mood}} = \left( \frac{\bar{\text{Mood}}}{10} \right) \times 100 $$
+1. **Mood Score ($W_1 = 50\%$):**
+   $$S_{\text{mood}} = \left( \frac{\bar{\text{Mood}}}{10} \right) \times 100$$
 
-2. **Sleep Score ($W_2 = 50\%$):** Calculated as the average of a Duration Score and a Quality Score.
-   $$ S_{\text{sleep\_dur}} = \min\left( \frac{\bar{\text{SleepDur}}}{8} \times 100, 100 \right) $$
-   $$ S_{\text{sleep\_qual}} = \left( \frac{\bar{\text{SleepQual}}}{10} \right) \times 100 $$
-   $$ S_{\text{sleep}} = \frac{S_{\text{sleep\_dur}} + S_{\text{sleep\_qual}}}{2} $$
+2. **Sleep Score ($W_2 = 50\%$):** Average of Duration Score and Quality Score.
+   $$S_{\text{sleep\_dur}} = \min\left( \frac{\bar{\text{SleepDur}}}{8} \times 100,\ 100 \right)$$
+   $$S_{\text{sleep\_qual}} = \left( \frac{\bar{\text{SleepQual}}}{10} \right) \times 100$$
+   $$S_{\text{sleep}} = \frac{S_{\text{sleep\_dur}} + S_{\text{sleep\_qual}}}{2}$$
 
 **Final Calculation:**
-$$ \text{Raw Score} = (S_{\text{mood}} \times 0.50) + (S_{\text{sleep}} \times 0.50) $$
-
-The final result is rounded to the nearest whole number and clamped between a minimum of 1 and a maximum of 100.
+$$\text{Score} = \text{clamp}\left( \text{round}\left( (S_{\text{mood}} \times 0.50) + (S_{\text{sleep}} \times 0.50) \right),\ 1,\ 100 \right)$$
 
 ---
 
 ## 4. Individual Impact Analysis (A/B Factor Testing)
 
-To measure the precise impact of specific habits (e.g., "Morning Jog") and specific medications on the user's mood and focus, the analytics engine iterates over every unique item ever logged and performs a comparative delta analysis.
+To measure the association of each specific habit or medication with the user's mood, focus, and sleep, the engine performs a direct group comparison for every unique item ever logged.
+
+### 4.1 Group Splitting
 
 For a given factor $F$:
-1. **Filter Groups:** 
-   - $G_{\text{with}}$: The set of days where $F$ was explicitly completed or taken.
-   - $G_{\text{without}}$: The set of days where $F$ was present in the log but NOT completed or taken.
-2. **Calculate Means:** 
-   - $\bar{\text{Mood}}_{\text{with}}$ and $\bar{\text{Mood}}_{\text{without}}$
-   - $\bar{\text{Focus}}_{\text{with}}$ and $\bar{\text{Focus}}_{\text{without}}$
-   - $\bar{\text{SleepDur}}_{\text{with}}$ and $\bar{\text{SleepDur}}_{\text{without}}$
-   - $\bar{\text{SleepQual}}_{\text{with}}$ and $\bar{\text{SleepQual}}_{\text{without}}$
-3. **Calculate Deltas:**
-   $$ \Delta_{\text{mood}} = \bar{\text{Mood}}_{\text{with}} - \bar{\text{Mood}}_{\text{without}} $$
-   $$ \Delta_{\text{focus}} = \bar{\text{Focus}}_{\text{with}} - \bar{\text{Focus}}_{\text{without}} $$
-   $$ \Delta_{\text{sleep\_dur}} = \bar{\text{SleepDur}}_{\text{with}} - \bar{\text{SleepDur}}_{\text{without}} $$
-   $$ \Delta_{\text{sleep\_qual}} = \bar{\text{SleepQual}}_{\text{with}} - \bar{\text{SleepQual}}_{\text{without}} $$
-4. **Calculate Associated Mood Tags:**
-   - For both $G_{\text{with}}$ and $G_{\text{without}}$, calculate the relative frequency of each recorded qualitative mood tag.
-   - A tag $T$ is deemed "associated" with factor $F$ if its relative frequency in $G_{\text{with}}$ is $\ge 20\%$ AND its frequency in $G_{\text{with}}$ is at least $15$ percentage points higher than in $G_{\text{without}}$.
+- $G_{\text{with}}$: Days where $F$ was **completed or taken**.
+- $G_{\text{without}}$: Days where $F$ was present in the log but **NOT completed or taken**.
 
-These raw deltas ($\Delta_{\text{mood}}$, $\Delta_{\text{focus}}$, $\Delta_{\text{sleep\_dur}}$, and $\Delta_{\text{sleep\_qual}}$) and associated tags are then presented visually to the user, identifying exactly how many points, hours of sleep, and which feelings a single habit or medicine adds or subtracts from their baseline well-being.
+### 4.2 Minimum Sample Guard
 
-### 4.1 Omission Insights (Actionable Warnings)
+Before computing any comparison:
+$$|G_{\text{with}}| \geq 5 \quad \text{AND} \quad |G_{\text{without}}| \geq 5$$
 
-In addition to A/B factor deltas, the engine generates actionable warnings by calculating the **Omission Penalty**. This compares the user's overall baseline average to the average on days when a specific habit or medication was *omitted*.
+If this condition fails, `confidence = "insufficient"` and all deltas are set to 0.
 
-For a given factor $F$:
-$$ \text{Mood Drop} = \bar{\text{Mood}}_{\text{overall}} - \bar{\text{Mood}}_{\text{without}} $$
-$$ \text{Focus Drop} = \bar{\text{Focus}}_{\text{overall}} - \bar{\text{Focus}}_{\text{without}} $$
+### 4.3 Group Means
 
-If the resulting drop is significant (e.g., $\ge 0.5$ points), the system triggers an actionable insight, actively warning the user about the statistical harm of skipping that specific factor compared to their normal baseline.
+$$\bar{\text{Mood}}_{\text{with}},\ \bar{\text{Mood}}_{\text{without}},\ \bar{\text{Focus}}_{\text{with}},\ \bar{\text{Focus}}_{\text{without}}, \ldots$$
+
+### 4.4 Direct Group Deltas
+
+$$\Delta_{\text{mood}} = \bar{\text{Mood}}_{\text{with}} - \bar{\text{Mood}}_{\text{without}}$$
+$$\Delta_{\text{focus}} = \bar{\text{Focus}}_{\text{with}} - \bar{\text{Focus}}_{\text{without}}$$
+$$\Delta_{\text{sleep\_dur}} = \bar{\text{SleepDur}}_{\text{with}} - \bar{\text{SleepDur}}_{\text{without}}$$
+$$\Delta_{\text{sleep\_qual}} = \bar{\text{SleepQual}}_{\text{with}} - \bar{\text{SleepQual}}_{\text{without}}$$
+
+> **Why not compare against the global average?** Using the global average as the baseline introduces **baseline contamination** — since the "with" group is part of the overall mean, the difference is systematically underestimated. A direct group-vs-group comparison is an isolated, unbiased measure.
+
+### 4.5 Cohen's d Effect Size
+
+To measure the practical magnitude of the difference (beyond just the raw delta), the engine computes a simplified Cohen's d using pooled population standard deviation:
+
+$$d = \frac{|\bar{\text{Mood}}_{\text{with}} - \bar{\text{Mood}}_{\text{without}}|}{\sqrt{\frac{\sigma_{\text{with}}^2 + \sigma_{\text{without}}^2}{2}}}$$
+
+Cohen's d thresholds used:
+| Range | Interpretation |
+|---|---|
+| $d < 0.2$ | Negligible (`"low"` confidence) |
+| $0.2 \leq d < 0.5$ | Small–medium effect (`"moderate"`) |
+| $d \geq 0.5$ | Medium–large effect (contributes to `"high"` if N ≥ 10) |
+
+### 4.6 Associated Mood Tags
+
+For both groups, the engine calculates the **relative frequency** of each qualitative mood tag:
+$$\text{freq}(T, G) = \frac{\text{count}(T \in G)}{|G|}$$
+
+A tag $T$ is considered associated with factor $F$ if:
+$$\text{freq}(T, G_{\text{with}}) \geq 0.20 \quad \text{AND} \quad \text{freq}(T, G_{\text{with}}) \geq \text{freq}(T, G_{\text{without}}) + 0.15$$
+
+Results are sorted by largest frequency difference descending.
 
 ---
 
-## 5. Temporal Analysis (Weekday vs. Weekend)
+## 5. Actionable Insights Generation
+
+Actionable text recommendations are derived from the individual impacts and aggregate sleep averages.
+
+**Filtering rules:**
+- Only impacts with `confidence === "high"` or `"moderate"` generate actionable text.
+- `"insufficient"` and `"low"` entries are silently skipped.
+- Items with `"moderate"` confidence append a *(limited data)* disclaimer to their text.
+
+**Association thresholds for surfacing an insight:**
+- Positive or negative association: $|\Delta_{\text{mood}}| \geq 0.5$ or $|\Delta_{\text{focus}}| \geq 0.5$
+- An actionable suggestion (maintain in routine) is generated when $|\Delta_{\text{mood}}| \geq 0.8$
+
+All text uses associative language: *"is associated with"*, *"tends to coincide with"* — never causal framing like *"causes"*, *"harms"*, or *"penalizes"*.
+
+---
+
+## 6. Temporal Analysis (Weekday vs. Weekend)
 
 The analytics charts group daily logs by their day of the week to analyze temporal lifestyle patterns:
-- **Weekday Average:** Arithmetic mean of mood/focus for logs where `DayOfWeek \in [1, 5]` (Monday-Friday).
-- **Weekend Average:** Arithmetic mean of mood/focus for logs where `DayOfWeek \in [0, 6]` (Sunday and Saturday).
+- **Weekday Average:** Arithmetic mean of mood/focus for logs where `DayOfWeek ∈ [1, 5]` (Monday–Friday).
+- **Weekend Average:** Arithmetic mean of mood/focus for logs where `DayOfWeek ∈ [0, 6]` (Sunday and Saturday).
 
-The absolute difference $|\bar{\text{Mood}}_{\text{weekend}} - \bar{\text{Mood}}_{\text{weekday}}|$ is calculated. A narrative is then generated based on which average is higher, giving the user insights regarding routine balance and work-week structural fatigue.
+The absolute difference $|\bar{\text{Mood}}_{\text{weekend}} - \bar{\text{Mood}}_{\text{weekday}}|$ is calculated. A narrative is generated based on which average is higher.

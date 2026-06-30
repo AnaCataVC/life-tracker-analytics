@@ -23,3 +23,4 @@ Registro histórico de las decisiones tecnológicas más importantes del proyect
 ### 4. Lecciones y Patrones
 Conocimiento extraído de las sesiones de desarrollo para evitar repetir errores.
 *   [Principio DRY en Serialización (`learning/dry-serialization-helpers.md`)](learning/dry-serialization-helpers.md)
+*   [Limitaciones Matemáticas de Heurísticas (`learning/heuristics-mathematical-limitations.md`)](learning/heuristics-mathematical-limitations.md): Análisis de los riesgos estadísticos del motor de insights (N=1, lenguaje causal, contaminación de baseline) y las decisiones de diseño tomadas para mitigarlos.

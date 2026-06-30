@@ -157,9 +157,14 @@ export default function AnalyticsCharts({ history, lang, mode = "all", theme = "
   const localInsights = useMemo(() => calculateLocalInsights(history, lang, enabledTrackers), [history, lang, enabledTrackers]);
   const highestImpactFactor = useMemo(() => {
     if (!localInsights.individualImpacts || localInsights.individualImpacts.length === 0) return null;
-    let topFactor = localInsights.individualImpacts[0];
+    // Only consider factors with statistically reliable confidence tiers
+    const reliableFactors = localInsights.individualImpacts.filter(
+      f => f.confidence === "high" || f.confidence === "moderate"
+    );
+    if (reliableFactors.length === 0) return null;
+    let topFactor = reliableFactors[0];
     let topVal = -999;
-    localInsights.individualImpacts.forEach(factor => {
+    reliableFactors.forEach(factor => {
       const val = Math.max(factor.moodDifference, factor.focusDifference);
       if (val > topVal) {
         topVal = val;
@@ -387,6 +392,17 @@ export default function AnalyticsCharts({ history, lang, mode = "all", theme = "
           f => f.type === "habit" && f.name.toLowerCase() === selectedHabit.toLowerCase()
         );
         if (itemImpact) {
+          // Show a data-quality notice when there are not enough samples to compare reliably
+          if (itemImpact.confidence === "insufficient") {
+            return lang === "es"
+              ? `Datos insuficientes para "${selectedHabit}": se necesitan al menos 5 días registrados en cada grupo (con/sin) para calcular una asociación confiable.`
+              : `Insufficient data for "${selectedHabit}": at least 5 logged days in each group (with/without) are needed to calculate a reliable association.`;
+          }
+
+          const limitedNote = itemImpact.confidence === "moderate"
+            ? (lang === "es" ? " (datos limitados)" : " (limited data)")
+            : "";
+
           const diff = targetMetric === "mood" ? itemImpact.moodDifference 
             : targetMetric === "concentration" ? itemImpact.focusDifference
             : targetMetric === "sleepDuration" ? itemImpact.sleepDurDifference
@@ -402,18 +418,18 @@ export default function AnalyticsCharts({ history, lang, mode = "all", theme = "
             : targetMetric === "sleepDuration" ? itemImpact.avgSleepDurWithout
             : itemImpact.avgSleepQualWithout;
 
-          if (diff > 0.1) {
+          if (diff && diff > 0.1) {
             return lang === "es"
-              ? `Análisis de Hábito: Realizar "${selectedHabit}" se asocia con un aumento de +${diff.toFixed(1)} en tu métrica promedio (${avgWith.toFixed(1)} vs ${avgWithout.toFixed(1)} cuando no se realiza).`
-              : `Habit Analysis: Completing "${selectedHabit}" correlates with a +${diff.toFixed(1)} increase in your average metric (${avgWith.toFixed(1)} vs ${avgWithout.toFixed(1)} when not completed).`;
-          } else if (diff < -0.1) {
+              ? `Análisis de Hábito: Realizar "${selectedHabit}" se asocia con un aumento de +${diff.toFixed(1)} en tu métrica promedio (${avgWith?.toFixed(1)} vs ${avgWithout?.toFixed(1)} cuando no se realiza).${limitedNote}`
+              : `Habit Analysis: Completing "${selectedHabit}" is associated with a +${diff.toFixed(1)} increase in your average metric (${avgWith?.toFixed(1)} vs ${avgWithout?.toFixed(1)} when not completed).${limitedNote}`;
+          } else if (diff && diff < -0.1) {
             return lang === "es"
-              ? `Análisis de Hábito: Realizar "${selectedHabit}" se asocia con una disminución de ${Math.abs(diff).toFixed(1)} en tu métrica (${avgWith.toFixed(1)} vs ${avgWithout.toFixed(1)}).`
-              : `Habit Analysis: Completing "${selectedHabit}" correlates with a drop of ${Math.abs(diff).toFixed(1)} in your average metric (${avgWith.toFixed(1)} vs ${avgWithout.toFixed(1)}).`;
+              ? `Análisis de Hábito: Realizar "${selectedHabit}" se asocia con una disminución de ${Math.abs(diff).toFixed(1)} en tu métrica (${avgWith?.toFixed(1)} vs ${avgWithout?.toFixed(1)}).${limitedNote}`
+              : `Habit Analysis: Completing "${selectedHabit}" is associated with a drop of ${Math.abs(diff).toFixed(1)} in your average metric (${avgWith?.toFixed(1)} vs ${avgWithout?.toFixed(1)}).${limitedNote}`;
           } else {
             return lang === "es"
-              ? `Análisis de Hábito: Tu métrica permanece estable (diferencia de ${diff.toFixed(1)}) se realice o no "${selectedHabit}".`
-              : `Habit Analysis: Your baseline stays relatively stable (difference of ${diff.toFixed(1)}) whether completing "${selectedHabit}" or not.`;
+              ? `Análisis de Hábito: Tu métrica permanece estable (diferencia de ${diff?.toFixed(1) ?? "0.0"}) se realice o no "${selectedHabit}".${limitedNote}`
+              : `Habit Analysis: Your baseline stays relatively stable (difference of ${diff?.toFixed(1) ?? "0.0"}) whether completing "${selectedHabit}" or not.${limitedNote}`;
           }
         }
         return lang === "es"
@@ -430,6 +446,17 @@ export default function AnalyticsCharts({ history, lang, mode = "all", theme = "
           f => f.type === "medication" && f.name.toLowerCase() === selectedMed.toLowerCase()
         );
         if (itemImpact) {
+          // Show a data-quality notice when there are not enough samples to compare reliably
+          if (itemImpact.confidence === "insufficient") {
+            return lang === "es"
+              ? `Datos insuficientes para "${selectedMed}": se necesitan al menos 5 días registrados en cada grupo (tomado/no tomado) para calcular una asociación confiable.`
+              : `Insufficient data for "${selectedMed}": at least 5 logged days in each group (taken/not taken) are needed to calculate a reliable association.`;
+          }
+
+          const limitedNote = itemImpact.confidence === "moderate"
+            ? (lang === "es" ? " (datos limitados)" : " (limited data)")
+            : "";
+
           const diff = targetMetric === "mood" ? itemImpact.moodDifference 
             : targetMetric === "concentration" ? itemImpact.focusDifference
             : targetMetric === "sleepDuration" ? itemImpact.sleepDurDifference
@@ -445,23 +472,23 @@ export default function AnalyticsCharts({ history, lang, mode = "all", theme = "
             : targetMetric === "sleepDuration" ? itemImpact.avgSleepDurWithout
             : itemImpact.avgSleepQualWithout;
 
-          if (diff > 0.1) {
+          if (diff && diff > 0.1) {
             return lang === "es"
-              ? `Análisis de Medicamento: Tomar "${selectedMed}" se asocia con un aumento de +${diff.toFixed(1)} en tu métrica promediada (${avgWith.toFixed(1)} vs ${avgWithout.toFixed(1)} en días omitidos).`
-              : `Medication Analysis: Taking "${selectedMed}" correlates with a +${diff.toFixed(1)} surge in your metric (${avgWith.toFixed(1)} vs ${avgWithout.toFixed(1)} on omitted days).`;
-          } else if (diff < -0.1) {
+              ? `Análisis de Medicamento: Tomar "${selectedMed}" se asocia con un aumento de +${diff.toFixed(1)} en tu métrica promediada (${avgWith?.toFixed(1)} vs ${avgWithout?.toFixed(1)} en días omitidos).${limitedNote}`
+              : `Medication Analysis: Taking "${selectedMed}" is associated with a +${diff.toFixed(1)} increase in your metric (${avgWith?.toFixed(1)} vs ${avgWithout?.toFixed(1)} on omitted days).${limitedNote}`;
+          } else if (diff && diff < -0.1) {
             return lang === "es"
-              ? `Análisis de Medicamento: Tomar "${selectedMed}" se asocia con un promedio menor en ${Math.abs(diff).toFixed(1)} puntos (${avgWith.toFixed(1)} vs ${avgWithout.toFixed(1)}).`
-              : `Medication Analysis: Taking "${selectedMed}" unexpectedly correlates with a minor decrease of ${Math.abs(diff).toFixed(1)} points (${avgWith.toFixed(1)} vs ${avgWithout.toFixed(1)}).`;
+              ? `Análisis de Medicamento: Tomar "${selectedMed}" se asocia con un promedio menor en ${Math.abs(diff).toFixed(1)} puntos (${avgWith?.toFixed(1)} vs ${avgWithout?.toFixed(1)}).${limitedNote}`
+              : `Medication Analysis: Taking "${selectedMed}" is associated with a decrease of ${Math.abs(diff).toFixed(1)} points in your metric (${avgWith?.toFixed(1)} vs ${avgWithout?.toFixed(1)}).${limitedNote}`;
           } else {
             return lang === "es"
-              ? `Análisis de Medicamento: Tu nivel permanece relativamente estable (diferencia de ${diff.toFixed(1)}) con la toma de "${selectedMed}".`
-              : `Medication Analysis: Your levels remain stable (difference of ${diff.toFixed(1)}) with the intake of "${selectedMed}".`;
+              ? `Análisis de Medicamento: Tu nivel permanece relativamente estable (diferencia de ${diff?.toFixed(1) ?? "0.0"}) con la toma de "${selectedMed}".${limitedNote}`
+              : `Medication Analysis: Your levels remain stable (difference of ${diff?.toFixed(1) ?? "0.0"}) with the intake of "${selectedMed}".${limitedNote}`;
           }
         }
         return lang === "es"
-          ? `Visualizando el impacto individual del medicamento "${selectedMed}".`
-          : `Visualizing the direct individual impact of taking "${selectedMed}".`;
+          ? `Visualizando el impacto del medicamento "${selectedMed}".`
+          : `Visualizing the association for "${selectedMed}"."`;
       }
       default:
         return lang === "es" 

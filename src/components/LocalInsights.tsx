@@ -253,13 +253,13 @@ export default function LocalInsights({ history, onCommitHabit, lang, enabledTra
                 </h3>
                 <p className="text-[11px] text-slate-400 dark:text-slate-500 font-sans">
                   {lang === "es" 
-                    ? "Análisis estadístico directo de cómo cada elemento influye individualmente en tus niveles promedio de ánimo y enfoque."
-                    : "Direct statistical evidence of how each individual element alters your baseline mood and focus rating."}
+                    ? "Asociaciones estadísticas observadas entre cada hábito o medicamento y tus métricas de bienestar. Correlación no implica causalidad."
+                    : "Statistical associations observed between each habit or medication and your well-being metrics. Correlation does not imply causation."}
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                {insights.individualImpacts.map((factor, idx) => {
+                {insights.individualImpacts.filter(f => f.confidence !== "insufficient").map((factor, idx) => {
                   const isHabit = factor.type === "habit";
                   const hasMoodChange = Math.abs(factor.moodDifference) > 0.1;
                   const hasFocusChange = Math.abs(factor.focusDifference) > 0.1;
@@ -290,6 +290,20 @@ export default function LocalInsights({ history, onCommitHabit, lang, enabledTra
                             ? `Ocurrencia: ${factor.daysCompleted}/${factor.daysPresent} días`
                             : `Logged: ${factor.daysCompleted}/${factor.daysPresent} days`}
                         </p>
+                        {/* Confidence badge */}
+                        <span className={`text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-sm uppercase ${
+                          factor.confidence === "high"
+                            ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400"
+                            : factor.confidence === "moderate"
+                            ? "bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400"
+                            : "bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500"
+                        }`}>
+                          {factor.confidence === "high"
+                            ? (lang === "es" ? "Alta confianza" : "High confidence")
+                            : factor.confidence === "moderate"
+                            ? (lang === "es" ? "Datos limitados" : "Limited data")
+                            : (lang === "es" ? "Confianza baja" : "Low confidence")}
+                        </span>
                       </div>
 
                       {/* Stat Deltas */}

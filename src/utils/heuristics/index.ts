@@ -1,5 +1,6 @@
-import { LogEntry, WellBeingInsights, EnabledTrackers } from "../../types";
+import { LogEntry, WellBeingInsights, EnabledTrackers, IndividualFactorImpact } from "../../types";
 import { getTotalSleep } from "../helpers";
+import { mean } from "./statistics";
 
 import { generateCorrelations } from "./correlations";
 import { calculateIndividualImpacts } from "./individualImpacts";
@@ -35,18 +36,17 @@ export function calculateLocalInsights(
   }
 
   // Calculate generic base parameters
-  const totalDays = history.length;
-  const avgMood = history.reduce((sum, entry) => sum + entry.mood, 0) / totalDays;
-  const avgSleepQual = history.reduce((sum, entry) => sum + entry.sleepQuality, 0) / totalDays;
-  const avgSleepDur = history.reduce((sum, entry) => sum + getTotalSleep(entry, et), 0) / totalDays;
-  const avgFocus = history.reduce((sum, entry) => sum + entry.concentration, 0) / totalDays;
+  const avgMood = mean(history.map((entry) => entry.mood));
+  const avgSleepQual = mean(history.map((entry) => entry.sleepQuality));
+  const avgSleepDur = mean(history.map((entry) => getTotalSleep(entry, et)));
+  const avgFocus = mean(history.map((entry) => entry.concentration));
 
   const correlations = generateCorrelations(history, lang, et, avgMood, avgFocus);
   
-  const individualImpacts = calculateIndividualImpacts(history, et);
+  const individualImpacts: IndividualFactorImpact[] = calculateIndividualImpacts(history, et);
   
   const { actionableInsights, positives, warnings } = generateActionableInsights(
-    lang, et, avgSleepDur, avgSleepQual, avgMood, avgFocus, individualImpacts
+    lang, et, avgSleepDur, avgSleepQual, individualImpacts
   );
 
   const { overallSummary, wellbeingScore } = generateScoringAndSummary(

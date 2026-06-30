@@ -1,4 +1,5 @@
-export interface TaskItem {
+import type { ConfidenceLevel } from "./utils/heuristics/statistics";
+
   id: string;
   name: string;
   completed: boolean;
@@ -60,6 +61,8 @@ export interface IndividualFactorImpact {
   sleepDurDifference?: number;
   sleepQualDifference?: number;
   associatedTags?: string[];
+  /** Statistical confidence tier for this insight. "insufficient" means not enough data to compare. */
+  confidence: ConfidenceLevel;
 }
 
 export interface WellBeingInsights {

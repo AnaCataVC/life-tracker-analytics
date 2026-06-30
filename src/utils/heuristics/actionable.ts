@@ -1,144 +1,186 @@
-import { ActionableInsight, EnabledTrackers } from "../../types";
+import { ActionableInsight, EnabledTrackers, IndividualFactorImpact } from "../../types";
 import { translations } from "../translations";
 
+/**
+ * Generates actionable insights, positives, and warnings from averaged metrics
+ * and pre-computed individual factor impacts.
+ *
+ * Design decisions:
+ * - All causal language ("harms you", "helps you") has been replaced with
+ *   associative language ("is associated with lower/higher...") to avoid
+ *   misleading the user about correlation vs. causation.
+ * - Insights for habits/medications are only generated when confidence is
+ *   "high" or "moderate". "low" and "insufficient" entries are silently skipped.
+ * - Positives/warnings for habits compare the "with" group directly against the
+ *   "without" group (moodDifference = avgMoodWith - avgMoodWithout) instead of
+ *   comparing against a contaminated global average.
+ * - A "(limited data)" disclaimer is appended for "moderate" confidence items.
+ */
 export function generateActionableInsights(
   lang: "en" | "es",
   et: EnabledTrackers,
   avgSleepDur: number,
   avgSleepQual: number,
-  avgMood: number,
-  avgFocus: number,
-  individualImpacts: any[]
+  individualImpacts: IndividualFactorImpact[]
 ): { actionableInsights: ActionableInsight[]; positives: string[]; warnings: string[] } {
   const t = translations[lang];
   const actionableInsights: ActionableInsight[] = [];
   const positives: string[] = [];
   const warnings: string[] = [];
 
-  // Sleep Duration advice
+  const limitedDataLabel = lang === "es" ? " (datos limitados)" : " (limited data)";
+
+  // ── Sleep Duration Advice ────────────────────────────────────────────────────
   if (et.sleep) {
     if (avgSleepDur < 7.0) {
       if (et.focus) {
         actionableInsights.push({
-          habit: lang === "es" ? "Avanzar la hora de dormir 30 minutos" : "Advance bedtime by 30 minutes",
-          impact: lang === "es" 
-            ? "Tu promedio de sueño actual es de " + avgSleepDur.toFixed(1) + "h. Subirlo al rango objetivo de 7-8h incrementará la claridad."
-            : "Your sleep average is " + avgSleepDur.toFixed(1) + "h. Moving into the 7-8h target zone will eliminate brain fog.",
+          habit:
+            lang === "es"
+              ? "Avanzar la hora de dormir 30 minutos"
+              : "Advance bedtime by 30 minutes",
+          impact:
+            lang === "es"
+              ? `Tu promedio de sueño actual es de ${avgSleepDur.toFixed(1)}h. Acercarlo al rango de 7-8h podría asociarse con mayor claridad mental.`
+              : `Your sleep average is ${avgSleepDur.toFixed(1)}h. Moving into the 7-8h range may be associated with improved cognitive clarity.`,
           targetArea: lang === "es" ? "Sueño y Enfoque" : "Sleep & Focus",
-          difficulty: "Easy"
+          difficulty: "Easy",
         });
       }
       warnings.push(
         lang === "es"
-          ? `Consumo de horas de sueño recortado (promedio de ${avgSleepDur.toFixed(1)} horas), lo que limita el rendimiento.`
-          : `Restricted sleep window logged (averaging ${avgSleepDur.toFixed(1)} hours), leading to stamina decay.`
+          ? `Promedio de sueño reducido (${avgSleepDur.toFixed(1)} horas), lo que puede asociarse con menor rendimiento.`
+          : `Short sleep average logged (${avgSleepDur.toFixed(1)} hours), which may be associated with reduced performance.`
       );
     } else {
       positives.push(
         lang === "es"
-          ? `¡Estupendo! Promedio de sueño óptimo de ${avgSleepDur.toFixed(1)} horas por noche.`
+          ? `¡Estupendo! Promedio de sueño saludable de ${avgSleepDur.toFixed(1)} horas por noche.`
           : `Great work maintaining an average sleep of ${avgSleepDur.toFixed(1)} hours.`
       );
     }
 
-    // Sleep Quality advice
+    // Sleep Quality Advice
     if (avgSleepQual < 6.5) {
       actionableInsights.push({
-        habit: lang === "es" ? "Limitar pantallas 1 hora antes de dormir" : "Restrict digital screens 1 hour before sleep",
-        impact: lang === "es" 
-          ? "Mejora la calidad subjetiva de descanso, que actualmente es un poco baja (" + avgSleepQual.toFixed(1) + "/10)."
-          : "Elevates rest deepness, which is currently slightly low at " + avgSleepQual.toFixed(1) + "/10.",
+        habit:
+          lang === "es"
+            ? "Limitar pantallas 1 hora antes de dormir"
+            : "Restrict digital screens 1 hour before sleep",
+        impact:
+          lang === "es"
+            ? `La calidad de descanso actual está algo baja (${avgSleepQual.toFixed(1)}/10). Reducir la exposición a pantallas puede estar asociado con un descanso más profundo.`
+            : `Rest quality is currently a bit low at ${avgSleepQual.toFixed(1)}/10. Reducing screen exposure may be associated with deeper sleep.`,
         targetArea: lang === "es" ? "Calidad de Sueño" : "Sleep Quality",
-        difficulty: "Medium"
+        difficulty: "Medium",
       });
       warnings.push(
         lang === "es"
-          ? `Registros muestran noches con sueño fragmentado (calidad de ${avgSleepQual.toFixed(1)}/10).`
-          : `Frequent restless nights detected (quality average ${avgSleepQual.toFixed(1)}/10).`
+          ? `Registros muestran noches con calidad de sueño reducida (promedio ${avgSleepQual.toFixed(1)}/10).`
+          : `Frequent low-quality nights detected (quality average ${avgSleepQual.toFixed(1)}/10).`
       );
     } else {
       positives.push(
         lang === "es"
-          ? "Calidad de sueño promedio muy sana e íntegra."
-          : "Sound sleep architecture with a healthy quality baseline."
+          ? "Calidad de sueño promedio saludable y consistente."
+          : "Healthy and consistent sleep quality baseline."
       );
     }
   }
 
-  // Fallback actionable insights if list is short
+  // ── Fallback Actionable Insight ──────────────────────────────────────────────
   if (actionableInsights.length === 0 && et.mood) {
     actionableInsights.push({
-      habit: lang === "es" ? "Añadir un diario de gratitud de una línea" : "Incorporate a 1-line gratitude entry",
-      impact: lang === "es" ? "Consolida las ráfagas de humor sobresalientes" : "Anchors outstanding days to protect long-term mood.",
+      habit:
+        lang === "es"
+          ? "Añadir un diario de gratitud de una línea"
+          : "Incorporate a 1-line gratitude entry",
+      impact:
+        lang === "es"
+          ? "Consolida los días positivos y puede reforzar el bienestar a largo plazo."
+          : "Anchors positive days and may reinforce long-term mood.",
       targetArea: lang === "es" ? "Estado de Ánimo" : "Mood",
-      difficulty: "Easy"
+      difficulty: "Easy",
     });
   }
 
-  // Generate text insights based on individual habit/medication impacts
-  individualImpacts.forEach(impact => {
-    const missedDays = impact.daysPresent - impact.daysCompleted;
-    const actionVerbEs = impact.type === "medication" ? "tomar" : "cumplir";
-    const actionVerbEn = impact.type === "medication" ? "take" : "complete";
-    const actionVerbEsCapital = impact.type === "medication" ? "Tomar" : "Cumplir";
-    const actionVerbEnCapital = impact.type === "medication" ? "Taking" : "Completing";
-    const actionVerbEnIng = impact.type === "medication" ? "taking" : "completing";
+  // ── Habit / Medication Insights ──────────────────────────────────────────────
+  individualImpacts.forEach((impact) => {
+    // Skip entries without enough data to be informative
+    if (impact.confidence === "insufficient" || impact.confidence === "low") return;
 
-    if (missedDays >= 1) { 
-      // "Doing X helps Y"
+    const disclaimer = impact.confidence === "moderate" ? limitedDataLabel : "";
+    const missedDays = impact.daysPresent - impact.daysCompleted;
+    const actionNounEs = impact.type === "medication" ? "tomar" : "cumplir";
+    const actionNounEn = impact.type === "medication" ? "taking" : "completing";
+    const actionCapEs = impact.type === "medication" ? "Tomar" : "Cumplir";
+    const actionCapEn = impact.type === "medication" ? "Taking" : "Completing";
+
+    if (missedDays >= 1) {
+      // --- Positive Association (With > Without) ---
       if (et.mood && impact.moodDifference >= 0.5) {
         positives.push(
           lang === "es"
-            ? `${actionVerbEsCapital} "${impact.name}" te ayuda: eleva tu ánimo en +${impact.moodDifference.toFixed(1)} puntos (vs no hacerlo).`
-            : `${actionVerbEnCapital} "${impact.name}" helps: boosts your mood by +${impact.moodDifference.toFixed(1)} points (vs skipping).`
+            ? `${actionCapEs} "${impact.name}" se asocia con un ánimo más alto (+${impact.moodDifference.toFixed(1)} pts vs días sin hacerlo).${disclaimer}`
+            : `${actionCapEn} "${impact.name}" is associated with higher mood (+${impact.moodDifference.toFixed(1)} pts vs days without).${disclaimer}`
         );
       } else if (et.focus && impact.focusDifference >= 0.5) {
         positives.push(
           lang === "es"
-            ? `${actionVerbEsCapital} "${impact.name}" te ayuda: mejora tu enfoque en +${impact.focusDifference.toFixed(1)} puntos.`
-            : `${actionVerbEnCapital} "${impact.name}" helps: improves your focus by +${impact.focusDifference.toFixed(1)} points.`
+            ? `${actionCapEs} "${impact.name}" se asocia con mayor enfoque (+${impact.focusDifference.toFixed(1)} pts vs días sin hacerlo).${disclaimer}`
+            : `${actionCapEn} "${impact.name}" is associated with better focus (+${impact.focusDifference.toFixed(1)} pts vs days without).${disclaimer}`
         );
       }
 
-      // "Not doing Z harms Y" (comparing missed days against the user's general baseline)
-      const moodDrop = avgMood - impact.avgMoodWithout;
-      const focusDrop = avgFocus - impact.avgFocusWithout;
+      // --- Negative Association (Without > With) ---
+      // Uses direct group difference (moodDifference = avgMoodWith - avgMoodWithout),
+      // so a negative value means days without scored higher.
+      const moodDrop = -impact.moodDifference; // positive means skipping correlates with lower mood
+      const focusDrop = -impact.focusDifference;
 
       if (et.mood && moodDrop >= 0.5 && impact.avgMoodWithout > 0) {
         warnings.push(
           lang === "es"
-            ? `No ${actionVerbEs} "${impact.name}" te perjudica: tu estado de ánimo cae a ${impact.avgMoodWithout.toFixed(1)} (promedio base: ${avgMood.toFixed(1)}).`
-            : `Not ${actionVerbEnIng} "${impact.name}" harms you: your mood drops to ${impact.avgMoodWithout.toFixed(1)} (baseline: ${avgMood.toFixed(1)}).`
+            ? `Los días sin ${actionNounEs} "${impact.name}" se asocian con un ánimo más bajo (${impact.avgMoodWithout.toFixed(1)} vs ${impact.avgMoodWith.toFixed(1)} con él).${disclaimer}`
+            : `Days without ${actionNounEn} "${impact.name}" are associated with lower mood (${impact.avgMoodWithout.toFixed(1)} vs ${impact.avgMoodWith.toFixed(1)} with it).${disclaimer}`
         );
         if (moodDrop >= 0.8) {
-          const exists = actionableInsights.some(a => a.habit.includes(impact.name));
+          const exists = actionableInsights.some((a) => a.habit.includes(impact.name));
           if (!exists) {
             actionableInsights.push({
-              habit: lang === "es" ? `No omitir "${impact.name}"` : `Do not skip "${impact.name}"`,
-              impact: lang === "es"
-                ? `Los datos indican que no ${actionVerbEs}lo penaliza tu estado de ánimo considerablemente.`
-                : `Data indicates that failing to ${actionVerbEn} it significantly penalizes your mood.`,
+              habit:
+                lang === "es"
+                  ? `Mantener "${impact.name}" en tu rutina`
+                  : `Consider maintaining "${impact.name}" in your routine`,
+              impact:
+                lang === "es"
+                  ? `Tus datos muestran una asociación entre omitirlo y un ánimo más bajo.${disclaimer}`
+                  : `Your data shows an association between skipping it and lower mood.${disclaimer}`,
               targetArea: lang === "es" ? "Estado de Ánimo" : "Mood",
-              difficulty: "Medium"
+              difficulty: "Medium",
             });
           }
         }
       } else if (et.focus && focusDrop >= 0.5 && impact.avgFocusWithout > 0) {
         warnings.push(
           lang === "es"
-            ? `No ${actionVerbEs} "${impact.name}" afecta tu enfoque: cae a ${impact.avgFocusWithout.toFixed(1)} en esos días.`
-            : `Not ${actionVerbEnIng} "${impact.name}" affects your focus: it drops to ${impact.avgFocusWithout.toFixed(1)} on those days.`
+            ? `Los días sin ${actionNounEs} "${impact.name}" se asocian con menor enfoque (${impact.avgFocusWithout.toFixed(1)} vs ${impact.avgFocusWith.toFixed(1)} con él).${disclaimer}`
+            : `Days without ${actionNounEn} "${impact.name}" are associated with lower focus (${impact.avgFocusWithout.toFixed(1)} vs ${impact.avgFocusWith.toFixed(1)} with it).${disclaimer}`
         );
         if (focusDrop >= 0.8) {
-          const exists = actionableInsights.some(a => a.habit.includes(impact.name));
+          const exists = actionableInsights.some((a) => a.habit.includes(impact.name));
           if (!exists) {
             actionableInsights.push({
-              habit: lang === "es" ? `Priorizar "${impact.name}"` : `Prioritize "${impact.name}"`,
-              impact: lang === "es"
-                ? `Evita saltarlo, ya que no ${actionVerbEs}lo perjudica sustancialmente tu concentración.`
-                : `Avoid skipping it, as failing to ${actionVerbEn} it substantially harms your concentration.`,
+              habit:
+                lang === "es"
+                  ? `Priorizar "${impact.name}" en tu rutina`
+                  : `Consider prioritizing "${impact.name}" in your routine`,
+              impact:
+                lang === "es"
+                  ? `Tus datos muestran una asociación entre omitirlo y un menor nivel de enfoque.${disclaimer}`
+                  : `Your data shows an association between skipping it and reduced focus.${disclaimer}`,
               targetArea: lang === "es" ? "Enfoque" : "Focus",
-              difficulty: "Medium"
+              difficulty: "Medium",
             });
           }
         }

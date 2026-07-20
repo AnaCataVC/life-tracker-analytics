@@ -19,8 +19,11 @@ Guías sobre mecánicas o implementaciones profundas de la aplicación.
 ### 3. Decisiones Arquitectónicas (ADR)
 Registro histórico de las decisiones tecnológicas más importantes del proyecto.
 *   [ADR 001: Adopción del Modelo BYOD (`ADR/001-adopt-remotestorage-byod.md`)](ADR/001-adopt-remotestorage-byod.md)
+*   [ADR 002: Rastreadores Dinámicos (`ADR/002-dynamic-custom-trackers.md`)](ADR/002-dynamic-custom-trackers.md)
 
 ### 4. Lecciones y Patrones
 Conocimiento extraído de las sesiones de desarrollo para evitar repetir errores.
 *   [Principio DRY en Serialización (`learning/dry-serialization-helpers.md`)](learning/dry-serialization-helpers.md)
 *   [Limitaciones Matemáticas de Heurísticas (`learning/heuristics-mathematical-limitations.md`)](learning/heuristics-mathematical-limitations.md): Análisis de los riesgos estadísticos del motor de insights (N=1, lenguaje causal, contaminación de baseline) y las decisiones de diseño tomadas para mitigarlos.
+*   [Patrón Template Dinámico (`learning/template-pattern.md`)](learning/template-pattern.md)
+*   [Categorización de Rastreadores (`learning/categorized-custom-trackers.md`)](learning/categorized-custom-trackers.md)

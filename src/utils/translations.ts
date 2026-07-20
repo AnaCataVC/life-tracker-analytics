@@ -65,6 +65,12 @@ export const translations = {
     allDone: "All done! Or no habits/tasks added for today. Add below.",
     taskPlaceholder: "New habit, task or routine task...",
     saveEntryBtn: "Save Day's Data",
+    customTrackerPlaceholder: "New tracker (e.g. Panic attacks)",
+    tracked: "Tracked",
+    customMarkers: "Custom Markers",
+    categoryMood: "Mood",
+    categorySleep: "Sleep",
+    categoryFocus: "Focus",
     
     // Tabs
     tabTrends: "Trends & Interactive Correlations",
@@ -116,7 +122,8 @@ export const translations = {
       moodRating: "Mood Rating",
       focusScore: "Focus Score",
       taskCompliance: "Routines Completed",
-      medsCompliance: "Medication Compliance"
+      medsCompliance: "Medication Compliance",
+      customTracker: "Custom Tracker"
     },
 
     // Directions
@@ -212,6 +219,12 @@ export const translations = {
     allDone: "¡Todo completado! O no hay tareas para hoy. Agrega una abajo.",
     taskPlaceholder: "Nuevo hábito, tarea o rutina...",
     saveEntryBtn: "Guardar Datos del Día",
+    customTrackerPlaceholder: "Nuevo rastreador (ej. Ataque de pánico)",
+    tracked: "Rastreado",
+    customMarkers: "Marcadores Personalizados",
+    categoryMood: "Estado de Ánimo",
+    categorySleep: "Sueño",
+    categoryFocus: "Enfoque",
     
     // Tabs
     tabTrends: "Tendencias y Análisis Interactivos",
@@ -263,7 +276,8 @@ export const translations = {
       moodRating: "Estado de Ánimo",
       focusScore: "Nivel de Enfoque",
       taskCompliance: "Tareas Completadas",
-      medsCompliance: "Medicamentos Tomados"
+      medsCompliance: "Medicamentos Tomados",
+      customTracker: "Rastreador Personalizado"
     },
 
     // Directions

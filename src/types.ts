@@ -1,5 +1,6 @@
 import type { ConfidenceLevel } from "./utils/heuristics/statistics";
 
+export interface TaskItem {
   id: string;
   name: string;
   completed: boolean;
@@ -23,6 +24,7 @@ export interface LogEntry {
   sleepDuration: number; // calculated hours, e.g. 8.5
   tookNap?: boolean;
   napDuration?: number; // hours
+  customTrackers?: { id: string; name: string; value: boolean; category: TrackerCategory }[];
   concentration: number; // 1-10
   tasks: TaskItem[];
   medications: MedicationItem[];
@@ -44,7 +46,7 @@ export interface ActionableInsight {
 
 export interface IndividualFactorImpact {
   name: string;
-  type: "habit" | "medication";
+  type: "habit" | "medication" | "custom_tracker";
   dosage?: string;
   daysPresent: number;
   daysCompleted: number; // or daysTaken
@@ -82,12 +84,20 @@ export interface UserMetadata {
   notes?: string;
 }
 
+export interface HeatmapData {
+  date: string;
+  count: number;
+}
+
+export type TrackerCategory = "mood" | "sleep" | "focus";
+
 export interface EnabledTrackers {
   mood: boolean;
   sleep: boolean;
   focus: boolean;
   medications: boolean;
   tasks: boolean;
+  customTrackers?: boolean;
   addNapToTotalSleep?: boolean;
 }
 
@@ -97,6 +107,7 @@ export interface BackupData {
   templates?: {
     medications: { name: string; dosage: string }[];
     habits: { name: string }[];
+    customTrackers?: { name: string; category: TrackerCategory }[];
   };
   config?: {
     theme: string;

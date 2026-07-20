@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { LogEntry, TaskItem, MedicationItem, EnabledTrackers } from "../types";
+import { LogEntry, TaskItem, MedicationItem, EnabledTrackers, TrackerCategory } from "../types";
 import { calculateSleepDuration, getTodayDateString } from "../utils/helpers";
 import { translations } from "../utils/translations";
 import { 
@@ -25,6 +25,8 @@ interface TrackingFormProps {
   onAddMedicationTemplate: (name: string, dosage: string) => void;
   habitsTemplate: { name: string }[];
   onAddHabitTemplate: (name: string) => void;
+  customTrackersTemplate?: { name: string; category?: TrackerCategory }[];
+  onAddCustomTrackerTemplate?: (name: string, category: TrackerCategory) => void;
   lang: "en" | "es";
   enabledTrackers: EnabledTrackers;
 }
@@ -38,6 +40,8 @@ export default function TrackingForm({
   onAddMedicationTemplate,
   habitsTemplate,
   onAddHabitTemplate,
+  customTrackersTemplate = [],
+  onAddCustomTrackerTemplate = () => {},
   lang,
   enabledTrackers
 }: TrackingFormProps) {
@@ -59,6 +63,9 @@ export default function TrackingForm({
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [newTaskName, setNewTaskName] = useState<string>("");
   
+  const [customTrackers, setCustomTrackers] = useState<{ id: string, name: string, value: boolean, category?: TrackerCategory }[]>([]);
+  const [newCustomTrackerName, setNewCustomTrackerName] = useState<string>("");
+
   const [medications, setMedications] = useState<MedicationItem[]>([]);
   const [newMedName, setNewMedName] = useState<string>("");
   const [newMedDosage, setNewMedDosage] = useState<string>("1 pill");
@@ -88,8 +95,10 @@ export default function TrackingForm({
       setNapDuration(entry.napDuration || 1);
       setConcentration(entry.concentration);
       
+      
       let currentTasks = entry.tasks || [];
       let currentMeds = entry.medications || [];
+      let currentCustomTrackers = entry.customTrackers || [];
 
       // If it's today, automatically append any new templates that aren't present
       if (selectedDate === getTodayDateString()) {
@@ -104,6 +113,18 @@ export default function TrackingForm({
           }
         });
         
+        const newCustomTrackers = [...currentCustomTrackers];
+        customTrackersTemplate.forEach((ct, i) => {
+          if (!newCustomTrackers.some(t => t.name.toLowerCase() === ct.name.toLowerCase())) {
+            newCustomTrackers.push({
+              id: `template-custom-new-${i}-${Date.now()}`,
+              name: ct.name,
+              value: false,
+              category: ct.category
+            });
+          }
+        });
+
         const newMeds = [...currentMeds];
         medicationTemplate.forEach((m, index) => {
           const existingMed = newMeds.find(cm => cm.name.toLowerCase() === m.name.toLowerCase());
@@ -122,10 +143,12 @@ export default function TrackingForm({
         });
         
         currentTasks = newTasks;
+        currentCustomTrackers = newCustomTrackers;
         currentMeds = newMeds;
       }
 
       setTasks(currentTasks);
+      setCustomTrackers(currentCustomTrackers);
       setMedications(currentMeds);
     } else {
       // Set clean defaults for a new log
@@ -146,6 +169,14 @@ export default function TrackingForm({
         completed: false
       }));
       setTasks(initialTasks);
+
+      const initialCustomTrackers = customTrackersTemplate.map((ct, i) => ({
+        id: `template-custom-${i}-${Date.now()}`,
+        name: ct.name,
+        value: false,
+        category: (ct as any).category || "mood"
+      }));
+      setCustomTrackers(initialCustomTrackers);
 
       // Initialize medications from current template list
       const initialMeds = medicationTemplate.map((m, index) => ({
@@ -229,6 +260,55 @@ export default function TrackingForm({
     setTasks(tasks.filter((t) => t.id !== id));
   };
 
+  const toggleCustomTracker = (id: string) => {
+    setCustomTrackers(customTrackers.map((t) => t.id === id ? { ...t, value: !t.value } : t));
+  };
+
+  const removeCustomTracker = (id: string) => {
+    setCustomTrackers(customTrackers.filter((t) => t.id !== id));
+  };
+
+  const renderCustomTrackersForCategory = (category: "mood" | "sleep" | "focus") => {
+    if (!enabledTrackers.customTrackers) return null;
+    const trackers = customTrackers.filter(ct => ct.category === category || (!ct.category && category === "mood"));
+    if (trackers.length === 0) return null;
+
+    return (
+      <div className="pt-2 mt-4 border-t border-slate-100 dark:border-slate-700/50 space-y-2">
+        <label className="text-[11px] font-mono tracking-wider uppercase text-slate-400 block mb-1">
+          {(t as any).customMarkers}
+        </label>
+        <div className="space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
+          {trackers.map((ct) => (
+            <div key={ct.id} className="flex items-center justify-between p-2 bg-white border border-slate-100 rounded-lg hover:bg-slate-50 transition-colors">
+              <button 
+                type="button"
+                onClick={() => toggleCustomTracker(ct.id)}
+                className="flex items-center gap-2.5 text-left flex-1 cursor-pointer"
+              >
+                {ct.value ? (
+                  <CheckSquare className="w-4 h-4 text-orange-500 shrink-0" />
+                ) : (
+                  <Square className="w-4 h-4 text-slate-400 shrink-0" />
+                )}
+                <span className={`text-xs font-sans ${ct.value ? "text-slate-400" : "text-slate-700 font-medium"}`}>
+                  {ct.name}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => removeCustomTracker(ct.id)}
+                className="text-slate-300 hover:text-red-500 p-1 transition-colors cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   const handleAddMed = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMedName.trim()) return;
@@ -269,6 +349,7 @@ export default function TrackingForm({
       napDuration: tookNap ? napDuration : 0,
       concentration,
       tasks,
+      customTrackers,
       medications
     };
     onSave(updatedEntry);
@@ -326,7 +407,7 @@ export default function TrackingForm({
       <form onSubmit={handleFormSubmit} className="p-6">
         
         {/* If no tracker is enabled */}
-        {!enabledTrackers.mood && !enabledTrackers.sleep && !enabledTrackers.focus && !enabledTrackers.medications && !enabledTrackers.tasks && (
+        {!enabledTrackers.mood && !enabledTrackers.sleep && !enabledTrackers.focus && !enabledTrackers.medications && !enabledTrackers.tasks && !enabledTrackers.customTrackers && (
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 text-center space-y-3 mb-6">
             <p className="text-xs text-amber-800 font-sans font-medium">
               {lang === "es" 
@@ -402,6 +483,8 @@ export default function TrackingForm({
                 })}
               </div>
             </div>
+            
+            {renderCustomTrackersForCategory("mood")}
           </div>
         )}
 
@@ -495,6 +578,8 @@ export default function TrackingForm({
                 )}
               </div>
             </div>
+
+            {renderCustomTrackersForCategory("sleep")}
           </div>
         )}
 
@@ -529,6 +614,8 @@ export default function TrackingForm({
                 <span>{t.flow}</span>
               </div>
             </div>
+
+            {renderCustomTrackersForCategory("focus")}
           </div>
         )}
 
@@ -692,7 +779,7 @@ export default function TrackingForm({
         </div>
 
         {/* SAVE BUTTON */}
-        {(enabledTrackers.mood || enabledTrackers.sleep || enabledTrackers.focus || enabledTrackers.medications || enabledTrackers.tasks) && (
+        {(enabledTrackers.mood || enabledTrackers.sleep || enabledTrackers.focus || enabledTrackers.medications || enabledTrackers.tasks || enabledTrackers.customTrackers) && (
           <div className="pt-4 flex justify-center">
             <button
               type="submit"

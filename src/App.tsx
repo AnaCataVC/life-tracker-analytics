@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { LogEntry, EnabledTrackers } from "./types";
+import { LogEntry, EnabledTrackers, TrackerCategory } from "./types";
 import { getTodayDateString, getTotalSleep, isRunningAsPWA } from "./utils/helpers";
 import TrackingForm from "./components/TrackingForm";
 import AnalyticsCharts from "./components/AnalyticsCharts";
@@ -91,6 +91,18 @@ export default function App() {
     return [];
   });
 
+  const [customTrackersTemplate, setCustomTrackersTemplate] = useState<{ name: string; category: TrackerCategory }[]>(() => {
+    try {
+      const saved = localStorage.getItem("wellbeing_customtrackers_template");
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error("Error reading custom trackers template:", e);
+    }
+    return [];
+  });
+
   const [activeSectionTab, setActiveSectionTab] = useState<"register" | "stats" | "correlations" | "config">("register");
   const [enabledTrackers, setEnabledTrackers] = useState<EnabledTrackers>(() => {
     try {
@@ -106,7 +118,8 @@ export default function App() {
       sleep: true,
       focus: true,
       medications: true,
-      tasks: true
+      tasks: true,
+      customTrackers: false
     };
   });
 
@@ -205,6 +218,13 @@ export default function App() {
         }
       } catch (e) {}
     }
+
+    const savedCustomTrackers = localStorage.getItem("wellbeing_customtrackers_template");
+    if (savedCustomTrackers) {
+      try {
+        setCustomTrackersTemplate(JSON.parse(savedCustomTrackers));
+      } catch (e) {}
+    }
   }, []);
 
   // Check PWA and handle install prompt
@@ -245,7 +265,8 @@ export default function App() {
       logs: overrideLogs || historyLogs || [],
       templates: {
         medications: medicationTemplate,
-        habits: habitsTemplate
+        habits: habitsTemplate,
+        customTrackers: customTrackersTemplate
       },
       config: { theme, enabledTrackers, appLang: lang }
     };
@@ -262,6 +283,10 @@ export default function App() {
       if (backupData.templates.habits) {
         setHabitsTemplate(backupData.templates.habits);
         localStorage.setItem("wellbeing_habits_template", JSON.stringify(backupData.templates.habits));
+      }
+      if (backupData.templates.customTrackers) {
+        setCustomTrackersTemplate(backupData.templates.customTrackers as { name: string; category: TrackerCategory }[]);
+        localStorage.setItem("wellbeing_customtrackers_template", JSON.stringify(backupData.templates.customTrackers));
       }
     }
     
@@ -451,6 +476,27 @@ export default function App() {
     triggerToast(lang === "es" ? "Hábito eliminado de la lista de plantillas." : "Habit removed from template.");
   };
 
+  const handleAddCustomTrackerTemplate = (name: string, category: TrackerCategory) => {
+    const exists = customTrackersTemplate.some(
+      (h) => h.name.toLowerCase() === name.toLowerCase()
+    );
+    if (!exists) {
+      const updatedTemplate = [...customTrackersTemplate, { name, category }];
+      setCustomTrackersTemplate(updatedTemplate);
+      localStorage.setItem("wellbeing_customtrackers_template", JSON.stringify(updatedTemplate));
+      triggerToast(lang === "es" ? "Rastreador añadido a la plantilla!" : "Tracker added to core templates!");
+    } else {
+      triggerToast(lang === "es" ? "Este rastreador ya existe en la plantilla." : "This tracker is already in your templates.");
+    }
+  };
+
+  const handleRemoveCustomTrackerTemplate = (index: number) => {
+    const updated = customTrackersTemplate.filter((_, i) => i !== index);
+    setCustomTrackersTemplate(updated);
+    localStorage.setItem("wellbeing_customtrackers_template", JSON.stringify(updated));
+    triggerToast(lang === "es" ? "Rastreador eliminado de la lista de plantillas." : "Tracker removed from template.");
+  };
+
   // Clear all data
   const handleClearAllData = async () => {
     if (window.confirm(t.eraserConfirm)) {
@@ -512,6 +558,12 @@ export default function App() {
           })),
           { id: `task-commit-${Date.now()}`, name: habitName, completed: false }
         ],
+        customTrackers: customTrackersTemplate.map((ct, i) => ({
+          id: `template-custom-${i}-${Date.now()}`,
+          name: ct.name,
+          value: false,
+          category: ct.category
+        })),
         medications: medicationTemplate.map((m, idx) => ({
           id: `med-pre-${idx}-${Date.now()}`,
           name: m.name,
@@ -786,6 +838,8 @@ export default function App() {
                 onAddMedicationTemplate={handleAddMedicationTemplate}
                 habitsTemplate={habitsTemplate}
                 onAddHabitTemplate={handleAddHabitTemplate}
+                customTrackersTemplate={customTrackersTemplate}
+                onAddCustomTrackerTemplate={handleAddCustomTrackerTemplate}
                 lang={lang}
                 enabledTrackers={enabledTrackers}
               />
@@ -1216,6 +1270,29 @@ export default function App() {
                     />
                   </label>
 
+                  {/* Custom Trackers tracking Switch */}
+                  <label className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl hover:bg-slate-100/50 cursor-pointer transition-colors gap-4">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <span className="w-7 h-7 bg-orange-50 text-orange-500 rounded-lg flex items-center justify-center shrink-0">
+                        <Activity className="w-4 h-4" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-xs font-semibold text-slate-800 block truncate">
+                          {lang === "es" ? "Rastreadores Personalizados" : "Custom Trackers"}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-sans block leading-tight">
+                          {lang === "es" ? "Variables binarias personalizadas (ej. Pesadillas, Dolor de cabeza)." : "Custom binary variables (e.g. Nightmares, Headache)."}
+                        </span>
+                      </div>
+                    </div>
+                    <input 
+                      type="checkbox" 
+                      checked={!!enabledTrackers.customTrackers}
+                      onChange={(e) => setEnabledTrackers({ ...enabledTrackers, customTrackers: e.target.checked })}
+                      className="w-4 h-4 accent-orange-500 rounded cursor-pointer shrink-0"
+                    />
+                  </label>
+
                 </div>
               </div>
 
@@ -1418,6 +1495,82 @@ export default function App() {
                         }
                       }}
                       className="px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs rounded-lg cursor-pointer flex items-center justify-center shrink-0"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* 3c. PLANTILLA DE RASTREADORES PERSONALIZADOS */}
+              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-3xs space-y-4">
+                <div className="flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-orange-500" />
+                  <h3 className="font-sans font-bold text-sm text-slate-800">
+                    {lang === "es" ? "Rastreadores Personalizados (Extra)" : "Custom Trackers"}
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-500 font-sans leading-relaxed">
+                  {lang === "es"
+                    ? "Crea rastreadores personalizados (ej. 'Pesadillas', 'Dolor de cabeza') y asígnalos a una categoría. Aparecerán automáticamente incrustados en su sección correspondiente al registrar tu día."
+                    : "Create custom trackers (e.g., 'Nightmares', 'Headache') and assign them to a category. They will automatically appear embedded in their corresponding section on your daily log."}
+                </p>
+
+                {customTrackersTemplate.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic text-center p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                    {lang === "es" ? "No hay rastreadores guardados." : "No core template trackers configured."}
+                  </p>
+                ) : (
+                  <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                    {customTrackersTemplate.map((tracker, index) => (
+                      <div key={index} className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
+                        <span className="text-xs font-sans font-semibold text-slate-800 block truncate">
+                          {tracker.name} <span className="text-[10px] text-slate-400 font-normal ml-1">({lang === "es" ? t.categoryMood : t.categoryMood})</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCustomTrackerTemplate(index)}
+                          className="text-slate-300 hover:text-red-500 p-1 cursor-pointer transition-colors shrink-0"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Quick Add Custom Tracker Form */}
+                <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl space-y-3">
+                  <span className="text-[10px] font-mono tracking-wider uppercase text-slate-400 block font-semibold text-center sm:text-left">
+                    {lang === "es" ? "Agregar a la Plantilla" : "Add Core Template Tracker"}
+                  </span>
+                  <div className="flex gap-2">
+                    <input
+                      id="config-tracker-name"
+                      type="text"
+                      placeholder={lang === "es" ? "Ej. Pesadillas" : "e.g. Nightmares"}
+                      className="flex-1 min-w-0 px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-xs font-sans text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-orange-100 focus:border-orange-500"
+                    />
+                    <select
+                      id="config-tracker-category"
+                      className="bg-white border border-slate-200 px-2 py-1.5 rounded-lg text-xs font-sans text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-orange-100 focus:border-orange-500"
+                    >
+                      <option value="mood">{t.categoryMood}</option>
+                      <option value="sleep">{t.categorySleep}</option>
+                      <option value="focus">{t.categoryFocus}</option>
+                    </select>
+                    <button
+                      onClick={() => {
+                        const nameBox = document.getElementById("config-tracker-name") as HTMLInputElement;
+                        const catBox = document.getElementById("config-tracker-category") as HTMLSelectElement;
+                        if (nameBox && nameBox.value.trim() && catBox) {
+                          handleAddCustomTrackerTemplate(nameBox.value.trim(), catBox.value as TrackerCategory);
+                          nameBox.value = "";
+                        } else {
+                          triggerToast(lang === "es" ? "Por favor ingresa un nombre." : "Please enter a tracker name.");
+                        }
+                      }}
+                      className="px-3 bg-orange-500 hover:bg-orange-600 text-white font-medium text-xs rounded-lg cursor-pointer flex items-center justify-center shrink-0"
                     >
                       <Plus className="w-4 h-4" />
                     </button>

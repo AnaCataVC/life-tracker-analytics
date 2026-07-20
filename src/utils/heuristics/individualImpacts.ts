@@ -81,6 +81,9 @@ export function calculateIndividualImpacts(
     });
   });
 
+  const allCustomTrackers = new Set<string>();
+  history.forEach((entry) => entry.customTrackers?.forEach((t) => { if (t.name) allCustomTrackers.add(t.name.trim()); }));
+
   const impacts: IndividualFactorImpact[] = [];
 
   /**
@@ -221,6 +224,36 @@ export function calculateIndividualImpacts(
         name: originalName,
         type: "medication",
         dosage,
+        daysPresent,
+        daysCompleted: daysWith.length,
+        associatedTags: getAssociatedTags(daysWith, daysWithout, et),
+        ...computeImpact(daysWith, daysWithout),
+      });
+    });
+  }
+
+  // ── Custom Trackers ────────────────────────────────────────────────────────
+  if (et.customTrackers) {
+    allCustomTrackers.forEach((trackerName) => {
+      const trackerNameLower = trackerName.toLowerCase();
+
+      const daysWith = history.filter((entry) => {
+        const tracker = entry.customTrackers?.find((t) => t.name.trim().toLowerCase() === trackerNameLower);
+        return tracker ? tracker.value : false;
+      });
+
+      const daysWithout = history.filter((entry) => {
+        const tracker = entry.customTrackers?.find((t) => t.name.trim().toLowerCase() === trackerNameLower);
+        return !tracker || !tracker.value;
+      });
+
+      const daysPresent = history.filter((entry) =>
+        entry.customTrackers?.some((t) => t.name.trim().toLowerCase() === trackerNameLower)
+      ).length;
+
+      impacts.push({
+        name: trackerName,
+        type: "custom_tracker",
         daysPresent,
         daysCompleted: daysWith.length,
         associatedTags: getAssociatedTags(daysWith, daysWithout, et),

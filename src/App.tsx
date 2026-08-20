@@ -1522,20 +1522,27 @@ export default function App() {
                   </p>
                 ) : (
                   <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
-                    {customTrackersTemplate.map((tracker, index) => (
-                      <div key={index} className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
-                        <span className="text-xs font-sans font-semibold text-slate-800 block truncate">
-                          {tracker.name} <span className="text-[10px] text-slate-400 font-normal ml-1">({lang === "es" ? t.categoryMood : t.categoryMood})</span>
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveCustomTrackerTemplate(index)}
-                          className="text-slate-300 hover:text-red-500 p-1 cursor-pointer transition-colors shrink-0"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
+                    {customTrackersTemplate.map((tracker, index) => {
+                      const categoryLabel = tracker.category === "sleep" 
+                        ? t.categorySleep 
+                        : tracker.category === "focus" 
+                        ? t.categoryFocus 
+                        : t.categoryMood;
+                      return (
+                        <div key={index} className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
+                          <span className="text-xs font-sans font-semibold text-slate-800 block truncate">
+                            {tracker.name} <span className="text-[10px] text-slate-400 font-normal ml-1">({categoryLabel})</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveCustomTrackerTemplate(index)}
+                            className="text-slate-300 hover:text-red-500 p-1 cursor-pointer transition-colors shrink-0"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
 

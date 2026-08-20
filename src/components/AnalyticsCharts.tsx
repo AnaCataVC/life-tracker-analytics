@@ -132,7 +132,7 @@ export default function AnalyticsCharts({ history, lang, mode = "all", theme = "
   // State for Heatmap display month and year
   const getInitialMonthAndYear = () => {
     if (history && history.length > 0) {
-      const sorted = [...history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      const sorted = [...history].sort((a, b) => b.date.localeCompare(a.date));
       const latestDateStr = sorted[0].date; // "YYYY-MM-DD"
       const parts = latestDateStr.split("-");
       if (parts.length === 3) {
@@ -176,7 +176,7 @@ export default function AnalyticsCharts({ history, lang, mode = "all", theme = "
 
   // Format historical logs for visual chart mapping
   const chartData = [...history]
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .sort((a, b) => a.date.localeCompare(b.date))
     .map((entry) => {
 
       // Check if selected habit was completed on this day (10 if completed, 0 if not completed/not present)
@@ -192,8 +192,11 @@ export default function AnalyticsCharts({ history, lang, mode = "all", theme = "
       // Format date for display: e.g. "May 20" or "20 may."
       let formattedDate = entry.date;
       try {
-        const d = new Date(entry.date + "T00:00:00");
-        formattedDate = d.toLocaleDateString(lang === "es" ? "es-ES" : "en-US", { month: "short", day: "numeric" });
+        const parts = entry.date.split("-");
+        if (parts.length === 3) {
+          const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+          formattedDate = d.toLocaleDateString(lang === "es" ? "es-ES" : "en-US", { month: "short", day: "numeric" });
+        }
       } catch (e) {
         // Fallback
       }
@@ -217,7 +220,7 @@ export default function AnalyticsCharts({ history, lang, mode = "all", theme = "
 
   // Calculate weekly statistics (last 7 logged days)
   const last7DaysLogs = [...history]
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 7);
 
   const last7AvgMood = last7DaysLogs.length > 0

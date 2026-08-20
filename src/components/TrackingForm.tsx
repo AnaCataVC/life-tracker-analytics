@@ -100,52 +100,59 @@ export default function TrackingForm({
       let currentMeds = entry.medications || [];
       let currentCustomTrackers = entry.customTrackers || [];
 
-      // If it's today, automatically append any new templates that aren't present
-      if (selectedDate === getTodayDateString()) {
-        const newTasks = [...currentTasks];
-        habitsTemplate.forEach((h, i) => {
-          if (!newTasks.some(t => t.name.toLowerCase() === h.name.toLowerCase())) {
-            newTasks.push({
-              id: `template-task-new-${i}-${Date.now()}`,
-              name: h.name,
-              completed: false
-            });
-          }
-        });
-        
-        const newCustomTrackers = [...currentCustomTrackers];
-        customTrackersTemplate.forEach((ct, i) => {
-          if (!newCustomTrackers.some(t => t.name.toLowerCase() === ct.name.toLowerCase())) {
-            newCustomTrackers.push({
-              id: `template-custom-new-${i}-${Date.now()}`,
-              name: ct.name,
-              value: false,
-              category: ct.category
-            });
-          }
-        });
+      // Synchronize tasks with template
+      const newTasks = [...currentTasks];
+      habitsTemplate.forEach((h, i) => {
+        if (!newTasks.some(t => t.name.toLowerCase() === h.name.toLowerCase())) {
+          newTasks.push({
+            id: `template-task-new-${i}-${Date.now()}`,
+            name: h.name,
+            completed: false
+          });
+        }
+      });
+      
+      // Synchronize custom trackers with template and ensure correct categories
+      const newCustomTrackers = currentCustomTrackers.map(ct => {
+        const templateMatch = customTrackersTemplate.find(t => t.name.toLowerCase() === ct.name.toLowerCase());
+        return {
+          ...ct,
+          category: ct.category || templateMatch?.category || "mood"
+        };
+      });
 
-        const newMeds = [...currentMeds];
-        medicationTemplate.forEach((m, index) => {
-          const existingMed = newMeds.find(cm => cm.name.toLowerCase() === m.name.toLowerCase());
-          if (existingMed) {
-            if (existingMed.dosage !== m.dosage) {
-              existingMed.dosage = m.dosage;
-            }
-          } else {
-            newMeds.push({
-              id: `template-med-new-${index}-${Date.now()}`,
-              name: m.name,
-              dosage: m.dosage,
-              taken: false
-            });
+      customTrackersTemplate.forEach((ct, i) => {
+        if (!newCustomTrackers.some(t => t.name.toLowerCase() === ct.name.toLowerCase())) {
+          newCustomTrackers.push({
+            id: `template-custom-new-${i}-${Date.now()}`,
+            name: ct.name,
+            value: false,
+            category: ct.category || "mood"
+          });
+        }
+      });
+
+      // Synchronize medications with template
+      const newMeds = [...currentMeds];
+      medicationTemplate.forEach((m, index) => {
+        const existingMed = newMeds.find(cm => cm.name.toLowerCase() === m.name.toLowerCase());
+        if (existingMed) {
+          if (existingMed.dosage !== m.dosage) {
+            existingMed.dosage = m.dosage;
           }
-        });
-        
-        currentTasks = newTasks;
-        currentCustomTrackers = newCustomTrackers;
-        currentMeds = newMeds;
-      }
+        } else {
+          newMeds.push({
+            id: `template-med-new-${index}-${Date.now()}`,
+            name: m.name,
+            dosage: m.dosage,
+            taken: false
+          });
+        }
+      });
+      
+      currentTasks = newTasks;
+      currentCustomTrackers = newCustomTrackers;
+      currentMeds = newMeds;
 
       setTasks(currentTasks);
       setCustomTrackers(currentCustomTrackers);
@@ -174,7 +181,7 @@ export default function TrackingForm({
         id: `template-custom-${i}-${Date.now()}`,
         name: ct.name,
         value: false,
-        category: (ct as any).category || "mood"
+        category: ct.category || "mood"
       }));
       setCustomTrackers(initialCustomTrackers);
 
@@ -188,7 +195,7 @@ export default function TrackingForm({
       setMedications(initialMeds);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entry, selectedDate]);
+  }, [entry, selectedDate, customTrackersTemplate, habitsTemplate, medicationTemplate]);
 
   const toggleTag = (tagName: string) => {
     if (moodTags.includes(tagName)) {
@@ -270,7 +277,11 @@ export default function TrackingForm({
 
   const renderCustomTrackersForCategory = (category: "mood" | "sleep" | "focus") => {
     if (!enabledTrackers.customTrackers) return null;
-    const trackers = customTrackers.filter(ct => ct.category === category || (!ct.category && category === "mood"));
+    const trackers = customTrackers.filter(ct => {
+      const templateMatch = customTrackersTemplate.find(t => t.name.toLowerCase() === ct.name.toLowerCase());
+      const cat = ct.category || templateMatch?.category || "mood";
+      return cat === category;
+    });
     if (trackers.length === 0) return null;
 
     return (
@@ -336,6 +347,16 @@ export default function TrackingForm({
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const sleepHours = calculateSleepDuration(bedtime, waketime);
+    
+    // Ensure all customTrackers have their category property resolved before saving
+    const resolvedCustomTrackers = customTrackers.map(ct => {
+      const templateMatch = customTrackersTemplate.find(t => t.name.toLowerCase() === ct.name.toLowerCase());
+      return {
+        ...ct,
+        category: ct.category || templateMatch?.category || "mood"
+      };
+    });
+
     const updatedEntry: LogEntry = {
       date: selectedDate,
       mood,
@@ -349,7 +370,7 @@ export default function TrackingForm({
       napDuration: tookNap ? napDuration : 0,
       concentration,
       tasks,
-      customTrackers,
+      customTrackers: resolvedCustomTrackers,
       medications
     };
     onSave(updatedEntry);
@@ -367,6 +388,25 @@ export default function TrackingForm({
   const medsComplianceRate = medications.length > 0 
     ? Math.round((medications.filter(m => m.taken).length / medications.length) * 100) 
     : 0;
+
+  // Format localized readable date
+  const readableSelectedDate = (() => {
+    try {
+      const parts = selectedDate.split("-");
+      if (parts.length === 3) {
+        const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        const formatted = d.toLocaleDateString(lang === "es" ? "es-ES" : "en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        });
+        const isToday = selectedDate === getTodayDateString();
+        return isToday ? `${formatted} (${lang === "es" ? "Hoy" : "Today"})` : formatted;
+      }
+    } catch (e) {}
+    return selectedDate;
+  })();
 
   return (
     <div id="tracking-panel" className="bg-white rounded-2xl shadow-xs border border-slate-100 overflow-hidden">
@@ -388,8 +428,8 @@ export default function TrackingForm({
               </span>
             )}
           </div>
-          <p className="text-xs text-slate-500 mt-0.5 font-sans">
-            {t.logSubtitle}
+          <p className="text-xs text-slate-500 mt-0.5 font-sans capitalize">
+            {readableSelectedDate}
           </p>
         </div>
         <div className="relative">
@@ -399,7 +439,7 @@ export default function TrackingForm({
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
             max={getTodayDateString()}
-            className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 font-sans focus:outline-hidden focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500"
+            className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 font-sans focus:outline-hidden focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 font-medium"
           />
         </div>
       </div>

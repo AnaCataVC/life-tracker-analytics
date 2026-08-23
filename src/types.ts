@@ -111,7 +111,7 @@ export interface BackupData {
   };
   config?: {
     theme: string;
-    enabledTrackers: any;
+    enabledTrackers: EnabledTrackers;
     appLang: string;
   };
 }

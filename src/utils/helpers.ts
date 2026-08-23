@@ -50,3 +50,35 @@ export const isRunningAsPWA = (): boolean => {
   const isIOSStandalone = ("standalone" in window.navigator) && (window.navigator as any).standalone;
   return isStandalone || !!isIOSStandalone;
 };
+
+/**
+ * Validates the structure and integrity of an imported BackupData payload.
+ */
+export function validateBackupData(data: unknown): { isValid: boolean; error?: string } {
+  if (!data || typeof data !== "object") {
+    return { isValid: false, error: "Backup data must be a non-null JSON object." };
+  }
+
+  const candidate = data as Record<string, unknown>;
+
+  if (!("logs" in candidate) || !Array.isArray(candidate.logs)) {
+    return { isValid: false, error: "Missing or invalid 'logs' array in backup payload." };
+  }
+
+  for (let i = 0; i < candidate.logs.length; i++) {
+    const entry = candidate.logs[i];
+    if (!entry || typeof entry !== "object" || typeof entry.date !== "string" || !entry.date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return { isValid: false, error: `Invalid log entry at index ${i}: 'date' (YYYY-MM-DD) is required.` };
+    }
+  }
+
+  if (candidate.templates && typeof candidate.templates !== "object") {
+    return { isValid: false, error: "Invalid 'templates' property in backup payload." };
+  }
+
+  if (candidate.config && typeof candidate.config !== "object") {
+    return { isValid: false, error: "Invalid 'config' property in backup payload." };
+  }
+
+  return { isValid: true };
+}

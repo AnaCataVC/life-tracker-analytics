@@ -9,7 +9,7 @@ import { db } from "./utils/db";
 import { useTrackingLogs } from "./hooks/useTrackingLogs";
 import { useTemplates } from "./hooks/useTemplates";
 import RemoteStorageWidget from "./components/RemoteStorageWidget";
-import { rs, pushBackupToRS, pullBackupFromRS } from "./utils/remoteStorage";
+import { rs, pushBackupToRS, pullBackupFromRS, pushLogToRS, syncGranularData } from "./utils/remoteStorage";
 import { 
   Settings, 
   Trash2, 
@@ -382,30 +382,25 @@ export default function App() {
 
   const handlePullFromRS = async () => {
     const confirmMsg = lang === "es"
-      ? "¿Restaurar desde la nube personal? Esto sobrescribirá tus datos actuales."
-      : "Restore from personal cloud? This will overwrite your current data.";
+      ? "¿Sincronizar con tu nube personal? Tus datos locales y remotos se fusionarán de forma segura sin perder registros."
+      : "Sync with your personal cloud? Local and remote logs will be safely reconciled without losing data.";
     if (!window.confirm(confirmMsg)) return;
 
     setIsSyncing(true);
     try {
-      const backupData = await pullBackupFromRS();
-      if (!backupData) {
-        triggerToast(lang === "es" ? "No se encontró respaldo en la nube." : "No backup found in cloud.");
-        return;
-      }
+      const { mergedLogs, remoteBackup } = await syncGranularData(historyLogs, generateBackupData());
       
-      const validation = validateBackupData(backupData);
-      if (!validation.isValid) {
-        triggerToast(lang === "es" ? `Datos remotos inválidos: ${validation.error}` : `Invalid remote data: ${validation.error}`);
-        return;
+      if (remoteBackup) {
+        await restoreFromBackupData(remoteBackup);
+      }
+      if (mergedLogs.length > 0) {
+        await db.logs.bulkPut(mergedLogs);
       }
 
-      await restoreFromBackupData(backupData);
-
-      triggerToast(lang === "es" ? "¡Datos recuperados de la nube! 📥" : "Data recovered from cloud! 📥");
+      triggerToast(lang === "es" ? `¡Sincronización completada (${mergedLogs.length} registros conciliados)! ☁️` : `Sync completed (${mergedLogs.length} reconciled logs)! ☁️`);
     } catch (err: any) {
       console.error(err);
-      triggerToast(lang === "es" ? "Error al descargar de la nube." : "Error downloading from cloud.");
+      triggerToast(lang === "es" ? "Error al sincronizar con la nube." : "Error syncing with cloud.");
     } finally {
       setIsSyncing(false);
     }
@@ -435,9 +430,10 @@ export default function App() {
     await db.logs.put(updatedEntry);
     triggerToast(`${t.toastSaved} ${updatedEntry.date}!`);
 
-    // Auto-push to remoteStorage if connected
+    // Auto-push to remoteStorage if connected (both granular day file and backup)
     if (isRSConnected) {
       try {
+        await pushLogToRS(updatedEntry);
         const logsToSync = historyLogs ? [...historyLogs.filter(l => l.date !== updatedEntry.date), updatedEntry] : [updatedEntry];
         const backupData = generateBackupData(logsToSync);
         await pushBackupToRS(backupData);

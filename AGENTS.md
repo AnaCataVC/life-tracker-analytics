@@ -63,6 +63,7 @@ When modifying or generating code for this repository, please adhere to the foll
 10. **Documentation Integrity**: ALWAYS update documentation (`README.md`, `PWA_INSTALLATION.md`, `GEMINI.md`, etc.) when making important architectural or feature changes to keep the project context up-to-date.
 11. **DRY Serialization Principle**: Whenever implementing or modifying data persistence (I/O, local exports, cloud sync), YOU MUST abstract the serialization/deserialization logic into pure helper functions. Never duplicate the generation of `BackupData` or the restoration logic to `db.logs`/React states across different handlers.
 12. **Exhaustive Cleanup**: When removing a feature or third-party integration (e.g., Google Cloud), perform a deep scan to remove all residual artifacts. This includes static HTML files generated for validation, hidden `<noscript>` or `<script>` tags added for crawler bots, and orphaned imports.
+13. **No Country Flag Emojis**: NEVER use country flag emojis (e.g., 🇬🇧, 🇪🇸, 🇺🇸) in any release notes, READMEs, documentation, code comments, or UI texts. Always use clean text labels (e.g., "English", "Spanish", "EN", "ES") instead.
 ## Development Scripts
 - `npm run dev`: Starts the local development environment using Vite.
 - `npm run build`: Compiles the React frontend for production distribution.

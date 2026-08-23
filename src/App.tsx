@@ -49,7 +49,7 @@ import {
   ReminderSettings,
 } from "./utils/notifications";
 
-export const APP_VERSION = "v1.0.0";
+export const APP_VERSION = "v1.3.0";
 
 export default function App() {
   // 1. Language state

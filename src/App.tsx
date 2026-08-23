@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { LogEntry, EnabledTrackers, TrackerCategory } from "./types";
-import { getTodayDateString, getTotalSleep, isRunningAsPWA } from "./utils/helpers";
+import { LogEntry, EnabledTrackers, TrackerCategory, BackupData } from "./types";
+import { getTodayDateString, getTotalSleep, isRunningAsPWA, validateBackupData } from "./utils/helpers";
 import TrackingForm from "./components/TrackingForm";
 import AnalyticsCharts from "./components/AnalyticsCharts";
 import LocalInsights from "./components/LocalInsights";
 import { translations } from "./utils/translations";
-import { BackupData } from "./types";
-import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "./utils/db";
+import { useTrackingLogs } from "./hooks/useTrackingLogs";
+import { useTemplates } from "./hooks/useTemplates";
 import RemoteStorageWidget from "./components/RemoteStorageWidget";
 import { rs, pushBackupToRS, pullBackupFromRS } from "./utils/remoteStorage";
 import { 
@@ -17,29 +17,29 @@ import {
   Calendar, 
   User, 
   Compass, 
-  LineChart,
-  Globe,
-  Database,
-  Download,
-  Upload,
-  Info,
-  AlertTriangle,
-  Plus,
-  Sparkles,
-  SlidersHorizontal,
-  Activity,
-  Award,
-  Pencil,
-  Brain,
-  Sun,
-  Moon,
-  Smile,
-  CheckSquare,
-  ChevronDown,
-  ChevronUp
+  LineChart, 
+  Globe, 
+  Database, 
+  Download, 
+  Upload, 
+  Info, 
+  AlertTriangle, 
+  Plus, 
+  Sparkles, 
+  SlidersHorizontal, 
+  Activity, 
+  Award, 
+  Pencil, 
+  Brain, 
+  Sun, 
+  Moon, 
+  Smile, 
+  CheckSquare, 
+  ChevronDown, 
+  ChevronUp 
 } from "lucide-react";
 
-export const APP_VERSION = "v0.2.1";
+export const APP_VERSION = "v1.0.0";
 
 export default function App() {
   // 1. Language state
@@ -71,39 +71,26 @@ export default function App() {
     return "light";
   });
 
-  // Main states
-  const historyLogs = useLiveQuery(() => db.logs.toArray()) || [];
-  const [selectedDate, setSelectedDate] = useState<string>(getTodayDateString());
-  
-  // Custom templates to auto-preload medications on new logs
-  const [medicationTemplate, setMedicationTemplate] = useState<{ name: string; dosage: string }[]>(
-    []
-  );
+  // Custom hooks for domain logic and persistence
+  const {
+    selectedDate,
+    setSelectedDate,
+    historyLogs,
+    currentEntry,
+    saveLog,
+    deleteLog,
+    clearAllLogs,
+  } = useTrackingLogs();
 
-  // Custom templates to auto-preload daily habits as checklist items on new logs
-  const [habitsTemplate, setHabitsTemplate] = useState<{ name: string }[]>(() => {
-    try {
-      const saved = localStorage.getItem("wellbeing_habits_template");
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (e) {
-      console.error("Error reading habits template:", e);
-    }
-    return [];
-  });
-
-  const [customTrackersTemplate, setCustomTrackersTemplate] = useState<{ name: string; category: TrackerCategory }[]>(() => {
-    try {
-      const saved = localStorage.getItem("wellbeing_customtrackers_template");
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (e) {
-      console.error("Error reading custom trackers template:", e);
-    }
-    return [];
-  });
+  const {
+    medicationTemplate,
+    habitsTemplate,
+    customTrackersTemplate,
+    setMedicationTemplate,
+    setHabitsTemplate,
+    setCustomTrackersTemplate,
+    clearAllTemplates,
+  } = useTemplates();
 
   const [activeSectionTab, setActiveSectionTab] = useState<"register" | "stats" | "correlations" | "config">("register");
   const [enabledTrackers, setEnabledTrackers] = useState<EnabledTrackers>(() => {
@@ -162,13 +149,12 @@ export default function App() {
   }, [theme]);
 
 
-  // Load language and data from localStorage on component mount
+  // Load language preference on component mount
   useEffect(() => {
     const savedLang = localStorage.getItem("wellbeing_app_lang") as "en" | "es" | null;
     if (savedLang) {
       setLang(savedLang);
     } else {
-      // Determine if browser preferred language is Spanish
       try {
         if (navigator.language?.toLowerCase().startsWith("es")) {
           setLang("es");
@@ -178,54 +164,6 @@ export default function App() {
       } catch (e) {
         setLang("es");
       }
-    }
-
-    const savedLogs = localStorage.getItem("wellbeing_history_logs");
-    if (savedLogs) {
-      try {
-        const logs = JSON.parse(savedLogs);
-        if (logs && logs.length > 0) {
-          db.logs.bulkPut(logs).then(() => {
-            localStorage.removeItem("wellbeing_history_logs");
-          });
-        }
-      } catch (e) {
-        console.error("Migration error:", e);
-      }
-    }
-
-    const savedMeds = localStorage.getItem("wellbeing_meds_template");
-    const savedHabits = localStorage.getItem("wellbeing_habits_template");
-
-    if (savedMeds) {
-      try {
-        const parsedMeds = JSON.parse(savedMeds);
-        // Clear if it matches the old defaults
-        if (parsedMeds.length > 0 && parsedMeds[0].name === "Multivitamin") {
-          localStorage.removeItem("wellbeing_meds_template");
-        } else {
-          setMedicationTemplate(parsedMeds);
-        }
-      } catch (e) {}
-    }
-
-    if (savedHabits) {
-      try {
-        const parsedHabits = JSON.parse(savedHabits);
-        // Clear if it matches the old defaults
-        if (parsedHabits.length > 0 && parsedHabits[0].name.includes("Beber 2 litros")) {
-          localStorage.removeItem("wellbeing_habits_template");
-        } else {
-          setHabitsTemplate(parsedHabits);
-        }
-      } catch (e) {}
-    }
-
-    const savedCustomTrackers = localStorage.getItem("wellbeing_customtrackers_template");
-    if (savedCustomTrackers) {
-      try {
-        setCustomTrackersTemplate(JSON.parse(savedCustomTrackers));
-      } catch (e) {}
     }
   }, []);
 
@@ -338,7 +276,13 @@ export default function App() {
       reader.onload = async (event) => {
         try {
           const content = event.target?.result as string;
-          const backupData = JSON.parse(content) as BackupData;
+          const parsed = JSON.parse(content);
+          const validation = validateBackupData(parsed);
+          if (!validation.isValid) {
+            triggerToast(lang === "es" ? `Respaldo inválido: ${validation.error}` : `Invalid backup: ${validation.error}`);
+            return;
+          }
+          const backupData = parsed as BackupData;
           await restoreFromBackupData(backupData);
 
           triggerToast(lang === "es" ? `¡Se recuperaron ${backupData.logs?.length || 0} registros y configuración! 📥` : `Successfully recovered ${backupData.logs?.length || 0} logs and config! 📥`);
@@ -385,6 +329,12 @@ export default function App() {
         return;
       }
       
+      const validation = validateBackupData(backupData);
+      if (!validation.isValid) {
+        triggerToast(lang === "es" ? `Datos remotos inválidos: ${validation.error}` : `Invalid remote data: ${validation.error}`);
+        return;
+      }
+
       await restoreFromBackupData(backupData);
 
       triggerToast(lang === "es" ? "¡Datos recuperados de la nube! 📥" : "Data recovered from cloud! 📥");
@@ -502,7 +452,8 @@ export default function App() {
   // Clear all data
   const handleClearAllData = async () => {
     if (window.confirm(t.eraserConfirm)) {
-      await db.logs.clear();
+      await clearAllLogs();
+      await clearAllTemplates();
       triggerToast(t.allCleared);
     }
   };
@@ -513,7 +464,7 @@ export default function App() {
       ? `¿Estás seguro de que quieres borrar el registro del día ${date}?`
       : `Are you sure you want to delete the log for ${date}?`;
     if (window.confirm(confirmMessage)) {
-      await db.logs.delete(date);
+      await deleteLog(date);
       triggerToast(lang === "es" ? "Registro borrado." : "Log deleted.");
     }
   };

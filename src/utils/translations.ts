@@ -140,6 +140,17 @@ export const translations = {
     helperList3: "Note down unique triggers daily.",
     helperList4: "Review statistics & heuristics trends.",
 
+    // Reminders & Notifications
+    remindersTitle: "Daily Reminders",
+    remindersSubtitle: "Receive local browser notifications to remember logging your daily wellness.",
+    enableReminders: "Enable Daily Reminder",
+    reminderTime: "Reminder Time",
+    testNotification: "Test Notification",
+    notificationPermissionDenied: "Notification permission was denied. Please allow notifications in your browser settings.",
+    notificationTestSent: "Test notification sent! 🔔",
+    reminderNotificationTitle: "Life Tracker Reminder 📝",
+    reminderNotificationBody: "It's time to log your mood, sleep, and habits for today!",
+
     // Default template tags
     tags: {
       calm: "🧘 calm",
@@ -293,6 +304,17 @@ export const translations = {
     helperList2: "Mantén actualizadas tus metas completadas.",
     helperList3: "Apunta desencadenantes únicos diariamente.",
     helperList4: "Revisa las tendencias estadísticas y heurísticas locales.",
+
+    // Reminders & Notifications
+    remindersTitle: "Recordatorios Diarios",
+    remindersSubtitle: "Recibe notificaciones locales en tu navegador para no olvidar registrar tu bienestar diario.",
+    enableReminders: "Activar Recordatorio Diario",
+    reminderTime: "Hora del Recordatorio",
+    testNotification: "Probar Notificación",
+    notificationPermissionDenied: "Permiso de notificaciones denegado. Por favor permítelas en los ajustes de tu navegador.",
+    notificationTestSent: "¡Notificación de prueba enviada! 🔔",
+    reminderNotificationTitle: "Recordatorio de Life Tracker 📝",
+    reminderNotificationBody: "¡Es hora de registrar tu estado de ánimo, descanso y hábitos de hoy!",
 
     // Default template tags
     tags: {

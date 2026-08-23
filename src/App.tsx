@@ -36,8 +36,18 @@ import {
   Smile, 
   CheckSquare, 
   ChevronDown, 
-  ChevronUp 
+  ChevronUp,
+  Bell,
+  Clock
 } from "lucide-react";
+import {
+  getReminderSettings,
+  saveReminderSettings,
+  requestNotificationPermission,
+  triggerNotification,
+  shouldTriggerReminder,
+  ReminderSettings,
+} from "./utils/notifications";
 
 export const APP_VERSION = "v1.0.0";
 
@@ -182,6 +192,61 @@ export default function App() {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     };
   }, []);
+
+  // 4. Reminders & Local Notifications
+  const [reminderSettings, setReminderSettings] = useState<ReminderSettings>(() => getReminderSettings());
+
+  const handleToggleReminder = async (enabled: boolean) => {
+    if (enabled) {
+      const granted = await requestNotificationPermission();
+      if (!granted) {
+        triggerToast(translations[lang].notificationPermissionDenied);
+        return;
+      }
+    }
+    const updated = { ...reminderSettings, enabled };
+    setReminderSettings(updated);
+    saveReminderSettings(updated);
+  };
+
+  const handleTimeChange = (time: string) => {
+    const updated = { ...reminderSettings, time };
+    setReminderSettings(updated);
+    saveReminderSettings(updated);
+  };
+
+  const handleTestNotification = async () => {
+    const granted = await requestNotificationPermission();
+    if (!granted) {
+      triggerToast(translations[lang].notificationPermissionDenied);
+      return;
+    }
+    const sent = triggerNotification(translations[lang].reminderNotificationTitle, {
+      body: translations[lang].reminderNotificationBody,
+    });
+    if (sent) {
+      triggerToast(translations[lang].notificationTestSent);
+    }
+  };
+
+  // Periodic reminder checker (runs every 30s while app is open)
+  useEffect(() => {
+    if (!reminderSettings.enabled) return;
+
+    const checkInterval = setInterval(() => {
+      if (shouldTriggerReminder(reminderSettings)) {
+        triggerNotification(translations[lang].reminderNotificationTitle, {
+          body: translations[lang].reminderNotificationBody,
+        });
+        const todayStr = getTodayDateString();
+        const updated = { ...reminderSettings, lastNotifiedDate: todayStr };
+        setReminderSettings(updated);
+        saveReminderSettings(updated);
+      }
+    }, 30000);
+
+    return () => clearInterval(checkInterval);
+  }, [reminderSettings, lang]);
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
@@ -1072,7 +1137,53 @@ export default function App() {
                 </div>
               </div>
 
-              {/* 2. SELECT WHAT TO TRACK */}
+              {/* 2. LOCAL REMINDERS & NOTIFICATIONS */}
+              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-3xs space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Bell className="w-5 h-5 text-indigo-500" />
+                    <h3 className="font-sans font-bold text-sm text-slate-800">
+                      {t.remindersTitle}
+                    </h3>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={reminderSettings.enabled}
+                      onChange={(e) => handleToggleReminder(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                  </label>
+                </div>
+                <p className="text-xs text-slate-500 font-sans leading-relaxed">
+                  {t.remindersSubtitle}
+                </p>
+
+                {reminderSettings.enabled && (
+                  <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 animate-fade-in">
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <Clock className="w-4 h-4 text-slate-400" />
+                      <span className="text-xs font-semibold text-slate-700">{t.reminderTime}:</span>
+                      <input
+                        type="time"
+                        value={reminderSettings.time}
+                        onChange={(e) => handleTimeChange(e.target.value)}
+                        className="px-2.5 py-1 text-xs font-mono font-bold bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-indigo-500"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleTestNotification}
+                      className="w-full sm:w-auto px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors cursor-pointer"
+                    >
+                      {t.testNotification}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* 3. SELECT WHAT TO TRACK */}
               <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-3xs space-y-4">
                 <div className="flex items-center gap-2">
                   <SlidersHorizontal className="w-5 h-5 text-indigo-500" />

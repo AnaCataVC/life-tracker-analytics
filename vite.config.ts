@@ -20,10 +20,28 @@ export default defineConfig(() => {
           background_color: '#ffffff',
           icons: [
             {
-              src: 'lta_icon_850x850.png',
-              sizes: '192x192 512x512',
+              src: 'pwa-192x192.png',
+              sizes: '192x192',
               type: 'image/png',
               purpose: 'any maskable'
+            },
+            {
+              src: 'pwa-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any maskable'
+            },
+            {
+              src: 'lta_icon_850x850.png',
+              sizes: '850x850',
+              type: 'image/png',
+              purpose: 'any'
+            },
+            {
+              src: 'lta_icon_1024x1024.png',
+              sizes: '1024x1024',
+              type: 'image/png',
+              purpose: 'any'
             }
           ]
         }

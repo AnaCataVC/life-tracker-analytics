@@ -42,7 +42,6 @@ The workspace is organized as a standard Vite + React project (100% Static Front
 - **Cloud Sync (BYOD)**: remoteStorage.js (`remotestoragejs`, `remotestorage-widget`)
 - **Styling**: Tailwind CSS v4 (`@tailwindcss/vite`)
 - **Icons**: Lucide React (`lucide-react`)
-- **Animations**: Framer Motion (`motion`)
 - **Data Visualization**: Recharts
 
 ## Coding Guidelines for AI Assistants

@@ -103,11 +103,12 @@ describe("Heuristics Statistics & Engines", () => {
       mood: 5 + (i % 5),
       sleepQuality: 6 + (i % 4),
       sleepDuration: 6 + (i % 3),
+      bedtime: "23:00",
+      waketime: "07:00",
       concentration: 6 + (i % 4),
-      medications: [{ name: "Melatonin", dosage: "5mg", taken: i % 2 === 0 }],
-      tasks: [{ name: "Gym", completed: i % 2 === 0 }],
+      medications: [{ id: `med-${i}`, name: "Melatonin", dosage: "5mg", taken: i % 2 === 0 }],
+      tasks: [{ id: `task-${i}`, name: "Gym", completed: i % 2 === 0 }],
       moodTags: i % 2 === 0 ? ["Energized", "Productive"] : ["Tired"],
-      notes: "",
     }));
 
     it("should generate correlations when dataset size >= MIN_SAMPLE_SIZE", () => {

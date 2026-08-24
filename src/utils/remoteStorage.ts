@@ -56,7 +56,6 @@ export function mergeLogs(localLogs: LogEntry[] = [], remoteLogs: LogEntry[] = [
         medications: mergedMedications,
         tasks: mergedTasks,
         moodTags: mergedTags,
-        notes: localEntry.notes || existing.notes || "",
       });
     }
   }

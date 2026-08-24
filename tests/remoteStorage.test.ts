@@ -11,10 +11,9 @@ describe("RemoteStorage Granular Merge Logic", () => {
     concentration: 8,
     bedtime: "23:00",
     waketime: "07:00",
-    tasks: taskNames.map((name) => ({ name, completed: true })),
+    tasks: taskNames.map((name, idx) => ({ id: `task-${idx}`, name, completed: true })),
     medications: [],
     moodTags: ["peaceful"],
-    notes: `Note for ${date}`,
   });
 
   it("should return empty array if both local and remote are empty", () => {

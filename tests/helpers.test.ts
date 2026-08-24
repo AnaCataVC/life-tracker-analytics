@@ -36,9 +36,9 @@ describe("Helpers Utilities", () => {
       bedtime: "23:00",
       waketime: "06:30",
       concentration: 8,
+      moodTags: [],
       medications: [],
       tasks: [],
-      notes: "",
     };
 
     it("should return only sleepDuration if addNapToTotalSleep is disabled or tookNap is false", () => {

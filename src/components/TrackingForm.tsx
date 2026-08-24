@@ -287,7 +287,7 @@ export default function TrackingForm({
     return (
       <div className="pt-2 mt-4 border-t border-slate-100 dark:border-slate-700/50 space-y-2">
         <label className="text-[11px] font-mono tracking-wider uppercase text-slate-400 block mb-1">
-          {(t as any).customMarkers}
+          {t.customMarkers}
         </label>
         <div className="space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
           {trackers.map((ct) => (
@@ -597,13 +597,13 @@ export default function TrackingForm({
                     className="w-4 h-4 accent-blue-500 rounded cursor-pointer"
                   />
                   <span className="text-xs font-sans text-slate-700">
-                    {(t as any).tookNap || "¿Tomaste siesta?"}
+                    {t.tookNap}
                   </span>
                 </label>
                 {tookNap && (
                   <div className="mt-3 pl-7 space-y-1 animate-fade-in">
                     <label className="text-[10px] font-mono tracking-wider uppercase text-slate-400">
-                      {(t as any).napDuration || "Horas de siesta"}
+                      {t.napDuration}
                     </label>
                     <input
                       type="number"

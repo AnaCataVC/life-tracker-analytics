@@ -22,7 +22,6 @@ Life Tracker Analytics is a comprehensive, privacy-focused React web application
 - **Frontend:** React 19, TypeScript
 - **Build Tool:** Vite
 - **Styling:** Tailwind CSS v4
-- **Animations:** Framer Motion (`motion`)
 - **Data Visualization:** Recharts
 - **Icons:** Lucide React
 - **Local DB / Storage:** Dexie.js (IndexedDB wrapper), Manual JSON Export/Import, remoteStorage.js (BYOD Cloud Sync)
@@ -53,7 +52,6 @@ Life Tracker Analytics es una aplicación web integral en React, enfocada en la 
 - **Frontend:** React 19, TypeScript
 - **Build Tool:** Vite
 - **Estilos:** Tailwind CSS v4
-- **Animaciones:** Framer Motion (`motion`)
 - **Visualización de Datos:** Recharts
 - **Iconos:** Lucide React
 - **Base de Datos Local:** Dexie.js (IndexedDB), Exportación e Importación Manual de JSON, remoteStorage.js (BYOD Sincronización en la Nube)

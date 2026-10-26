@@ -781,6 +781,7 @@ export default function App() {
               onClick={dismissPurposeBanner}
               className="absolute top-3 right-3 p-1.5 text-indigo-400 hover:text-indigo-600 dark:text-indigo-500 dark:hover:text-indigo-300 transition-colors rounded-lg hover:bg-indigo-100/50 dark:hover:bg-indigo-800/50 cursor-pointer"
               title={lang === "es" ? "Ocultar mensaje" : "Dismiss message"}
+              aria-label={lang === "es" ? "Ocultar mensaje" : "Dismiss message"}
             >
               <Plus className="w-5 h-5 rotate-45" />
             </button>
@@ -1449,7 +1450,8 @@ export default function App() {
                           type="button"
                           onClick={() => handleRemoveMedicationTemplate(index)}
                           className="text-slate-300 hover:text-red-500 p-1 cursor-pointer transition-colors shrink-0"
-                          title="Delete medication template preset"
+                          title={lang === "es" ? "Eliminar plantilla de medicamento" : "Delete medication template preset"}
+                          aria-label={lang === "es" ? `Eliminar plantilla ${med.name}` : `Delete medication template ${med.name}`}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -1525,7 +1527,8 @@ export default function App() {
                           type="button"
                           onClick={() => handleRemoveHabitTemplate(index)}
                           className="text-slate-300 hover:text-red-500 p-1 cursor-pointer transition-colors shrink-0"
-                          title="Delete habit template preset"
+                          title={lang === "es" ? "Eliminar plantilla de hábito" : "Delete habit template preset"}
+                          aria-label={lang === "es" ? `Eliminar plantilla ${habit.name}` : `Delete habit template ${habit.name}`}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -1598,6 +1601,8 @@ export default function App() {
                           <button
                             type="button"
                             onClick={() => handleRemoveCustomTrackerTemplate(index)}
+                            title={lang === "es" ? "Eliminar plantilla de rastreador" : "Delete custom tracker template"}
+                            aria-label={lang === "es" ? `Eliminar plantilla ${tracker.name}` : `Delete custom tracker template ${tracker.name}`}
                             className="text-slate-300 hover:text-red-500 p-1 cursor-pointer transition-colors shrink-0"
                           >
                             <Trash2 className="w-4 h-4" />

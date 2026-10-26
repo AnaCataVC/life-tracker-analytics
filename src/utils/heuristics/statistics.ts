@@ -112,3 +112,102 @@ export function formatPearsonR(r: number): string {
   const sign = r >= 0 ? "+" : "−";
   return `r = ${sign}${Math.abs(r).toFixed(2)}`;
 }
+
+/**
+ * Calculates a rolling average across an array of nullable numbers.
+ * Missing days are explicitly represented as `null` and are NOT coerced to zero.
+ * 
+ * @param values Array of numbers or null for missing dates
+ * @param windowSize Number of days in the rolling window (e.g. 7 or 28)
+ * @param minObservations Minimum non-null values required in the window to compute an average (defaults to Math.ceil(windowSize / 2))
+ */
+export function rollingAverage(
+  values: (number | null)[],
+  windowSize: number,
+  minObservations = Math.ceil(windowSize / 2)
+): (number | null)[] {
+  if (windowSize <= 0) return values.map(() => null);
+
+  const result: (number | null)[] = [];
+
+  for (let i = 0; i < values.length; i++) {
+    const windowStart = Math.max(0, i - windowSize + 1);
+    const window = values.slice(windowStart, i + 1).filter((v): v is number => v !== null && !isNaN(v));
+
+    if (window.length < minObservations) {
+      result.push(null);
+    } else {
+      const avg = window.reduce((sum, v) => sum + v, 0) / window.length;
+      result.push(parseFloat(avg.toFixed(2)));
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Calculates the deviation and z-score of a current value against a historical baseline.
+ */
+export function calculateBaselineDeviation(
+  currentValue: number,
+  baselineValues: number[]
+): {
+  delta: number;
+  zScore: number | null;
+  direction: "above" | "below" | "baseline";
+} {
+  const clean = baselineValues.filter((v) => typeof v === "number" && !isNaN(v));
+  if (clean.length === 0) {
+    return { delta: 0, zScore: null, direction: "baseline" };
+  }
+
+  const baselineMean = mean(clean);
+  const baselineSd = stdDev(clean);
+  const delta = parseFloat((currentValue - baselineMean).toFixed(2));
+
+  let zScore: number | null = null;
+  if (baselineSd > 0) {
+    zScore = parseFloat(((currentValue - baselineMean) / baselineSd).toFixed(2));
+  }
+
+  let direction: "above" | "below" | "baseline" = "baseline";
+  if (delta > 0.25) direction = "above";
+  else if (delta < -0.25) direction = "below";
+
+  return { delta, zScore, direction };
+}
+
+/**
+ * Robust outlier filtering using the Interquartile Range (IQR) method.
+ * Values outside [Q1 - 1.5 * IQR, Q3 + 1.5 * IQR] are excluded.
+ * For arrays with fewer than 4 elements, returns the array unchanged.
+ */
+export function filterOutliersIQR(values: number[]): number[] {
+  const valid = values.filter((v) => typeof v === "number" && !isNaN(v));
+  if (valid.length < 4) return valid;
+
+  const sorted = [...valid].sort((a, b) => a - b);
+  const q1 = quantile(sorted, 0.25);
+  const q3 = quantile(sorted, 0.75);
+  const iqr = q3 - q1;
+
+  if (iqr === 0) return sorted;
+
+  const lowerBound = q1 - 1.5 * iqr;
+  const upperBound = q3 + 1.5 * iqr;
+
+  return sorted.filter((v) => v >= lowerBound && v <= upperBound);
+}
+
+/**
+ * Helper to compute an approximate quantile on a sorted array of numbers.
+ */
+function quantile(sorted: number[], q: number): number {
+  const pos = (sorted.length - 1) * q;
+  const base = Math.floor(pos);
+  const rest = pos - base;
+  if (sorted[base + 1] !== undefined) {
+    return sorted[base] + rest * (sorted[base + 1] - sorted[base]);
+  }
+  return sorted[base];
+}

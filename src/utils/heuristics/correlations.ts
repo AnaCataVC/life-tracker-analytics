@@ -7,6 +7,7 @@ import {
   formatPearsonR,
   MIN_SAMPLE_SIZE,
 } from "./statistics";
+import { getConsecutivePairs } from "./timeSeries";
 
 export function generateCorrelations(
   history: LogEntry[],
@@ -81,6 +82,39 @@ export function generateCorrelations(
       direction,
       description: lang === "es" ? descEs : descEn,
     });
+  }
+
+  // --- Lagged Sleep Quality (Night t-1) ↔ Next-Day Mood/Focus (Lag-1 Time Series) ---
+  if (et.sleep && et.focus) {
+    const consecutivePairs = getConsecutivePairs(history);
+    if (consecutivePairs.length >= MIN_SAMPLE_SIZE) {
+      const prevQualities = consecutivePairs.map((p) => p.prev.sleepQuality);
+      const currConcentrations = consecutivePairs.map((p) => p.curr.concentration);
+      const r = pearsonCorrelation(prevQualities, currConcentrations);
+      const direction = pearsonDirection(r);
+      const rLabel = formatPearsonR(r);
+
+      const descEn =
+        direction === "positive"
+          ? `Consecutive day analysis shows prior sleep quality is positively associated with subsequent day focus (${rLabel}, n=${consecutivePairs.length} consecutive pairs). High quality rest builds focus momentum.`
+          : direction === "negative"
+          ? `Prior sleep quality correlates negatively with subsequent day focus (${rLabel}, n=${consecutivePairs.length} pairs). Monitor for recovery rebound patterns.`
+          : `Prior day sleep quality shows neutral carryover to the next day's focus (${rLabel}, n=${consecutivePairs.length} consecutive pairs).`;
+
+      const descEs =
+        direction === "positive"
+          ? `El análisis de días consecutivos muestra que la calidad de sueño previa se asocia positivamente con la concentración del día siguiente (${rLabel}, n=${consecutivePairs.length} pares consecutivos).`
+          : direction === "negative"
+          ? `La calidad de sueño previa se asocia negativamente con la concentración del día siguiente (${rLabel}, n=${consecutivePairs.length} pares). Monitorea posibles efectos de rebote.`
+          : `La calidad de sueño previa muestra un efecto acumulado neutro sobre la concentración del día posterior (${rLabel}, n=${consecutivePairs.length} pares consecutivos).`;
+
+      correlations.push({
+        categoryA: `${t.categories.sleepQuality} (t-1)`,
+        categoryB: `${t.categories.focusScore} (t)`,
+        direction,
+        description: lang === "es" ? descEs : descEn,
+      });
+    }
   }
 
   return correlations;

@@ -140,6 +140,10 @@ describe("Heuristics Statistics & Engines", () => {
       expect(insights.wellbeingScore).toBeGreaterThan(0);
       expect(insights.individualImpacts).toBeDefined();
       expect(insights.overallSummary).toBeTruthy();
+      expect(insights.rollingTrends).toBeDefined();
+      expect(Array.isArray(insights.rollingTrends)).toBe(true);
+      expect(insights.laggedImpacts).toBeDefined();
+      expect(Array.isArray(insights.laggedImpacts)).toBe(true);
     });
   });
 });

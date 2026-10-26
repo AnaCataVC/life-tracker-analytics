@@ -126,6 +126,23 @@ export const translations = {
       customTracker: "Custom Tracker"
     },
 
+    // Rolling Trends & Lagged Analysis
+    rollingTrendsTitle: "Longitudinal Trends & Personal Baselines",
+    rollingTrendsSubtitle: "Compares your recent 7-day momentum against your 28-day personal baseline to detect directional changes.",
+    rolling7dLabel: "7-Day Average",
+    baseline28dLabel: "28-Day Baseline",
+    trendImproving: "Improving",
+    trendDeclining: "Declining",
+    trendStable: "Stable",
+    trendInsufficient: "Need ≥4 recorded days",
+    laggedImpactsTitle: "Lagged Habit & Sleep Relationships (Lag-1)",
+    laggedImpactsSubtitle: "Analyzes how habits performed yesterday associate with next-morning sleep quality and daytime cognitive focus.",
+    consecutivePairsLabel: "consecutive day pairs",
+    confidenceHigh: "High Confidence",
+    confidenceModerate: "Moderate (Limited Data)",
+    confidenceLow: "Low Confidence",
+    confidenceInsufficient: "Insufficient Data",
+
     // Directions
     positive: "Positive",
     negative: "Negative",
@@ -290,6 +307,23 @@ export const translations = {
       medsCompliance: "Medicamentos Tomados",
       customTracker: "Rastreador Personalizado"
     },
+
+    // Rolling Trends & Lagged Analysis
+    rollingTrendsTitle: "Tendencias Longitudinales y Líneas Base Personales",
+    rollingTrendsSubtitle: "Compara tu momento reciente de 7 días contra tu línea base personal de 28 días para detectar cambios de dirección.",
+    rolling7dLabel: "Promedio 7 Días",
+    baseline28dLabel: "Línea Base 28 Días",
+    trendImproving: "En Ascenso",
+    trendDeclining: "En Descenso",
+    trendStable: "Estable",
+    trendInsufficient: "Se requieren ≥4 días registrados",
+    laggedImpactsTitle: "Efecto Rezagado de Hábitos y Sueño (Lag-1)",
+    laggedImpactsSubtitle: "Analiza cómo los hábitos completados ayer se asocian con la calidad del descanso matutino y el enfoque del día de hoy.",
+    consecutivePairsLabel: "pares de días consecutivos",
+    confidenceHigh: "Alta Confianza",
+    confidenceModerate: "Moderada (Datos Limitados)",
+    confidenceLow: "Baja Confianza",
+    confidenceInsufficient: "Datos Insuficientes",
 
     // Directions
     positive: "Positiva",

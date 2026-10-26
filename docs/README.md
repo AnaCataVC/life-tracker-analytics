@@ -13,6 +13,7 @@ Documentación sobre cómo se almacena, transfiere y estructura la información.
 
 ### 2. Funcionalidades y Lógica (Features)
 Guías sobre mecánicas o implementaciones profundas de la aplicación.
+*   [Metodología Analítica y Guardrails Estadísticos (`analytics-methodology.md`)](analytics-methodology.md): Documento formal en inglés sobre contratos de datos, semántica de datos faltantes, series temporales rezagadas (Lag-1), ventanas móviles y límites causales.
 *   [Motor Analítico y Heurísticas (`features/analytics_engine.md`)](features/analytics_engine.md): Fórmulas y matemática detrás del cálculo de los gráficos de tendencias e impacto individual.
 *   [Guía de Aplicación Web Progresiva (`features/pwa_guide.md`)](features/pwa_guide.md): Cómo funciona la instalación offline de la aplicación y la configuración de Service Workers en Vite.
 

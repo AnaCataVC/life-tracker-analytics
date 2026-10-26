@@ -309,7 +309,9 @@ export default function TrackingForm({
               <button
                 type="button"
                 onClick={() => removeCustomTracker(ct.id)}
-                className="text-slate-300 hover:text-red-500 p-1 transition-colors cursor-pointer"
+                className="text-slate-300 hover:text-red-500 p-1 transition-colors cursor-pointer rounded-md focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:outline-hidden"
+                title={lang === "es" ? "Eliminar rastreador personalizado" : "Remove custom tracker"}
+                aria-label={lang === "es" ? `Eliminar rastreador ${ct.name}` : `Remove tracker ${ct.name}`}
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
@@ -707,8 +709,9 @@ export default function TrackingForm({
                       <button
                         type="button"
                         onClick={() => removeMed(med.id)}
-                        className="text-slate-300 hover:text-red-500 p-1 transition-colors cursor-pointer"
-                        title="Remove medicine log"
+                        className="text-slate-300 hover:text-red-500 p-1 transition-colors cursor-pointer rounded-md focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:outline-hidden"
+                        title={lang === "es" ? "Eliminar registro de medicamento" : "Remove medicine log"}
+                        aria-label={lang === "es" ? `Eliminar medicamento ${med.name}` : `Remove medicine ${med.name}`}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -736,8 +739,9 @@ export default function TrackingForm({
                 <button
                   type="button"
                   onClick={handleAddMed}
-                  className="col-span-4 sm:shrink-0 bg-rose-500 hover:bg-rose-600 text-white p-1.5 rounded-lg transition-colors flex items-center justify-center cursor-pointer h-8 sm:h-7"
-                  title="Add Medicine"
+                  className="col-span-4 sm:shrink-0 bg-rose-500 hover:bg-rose-600 text-white p-1.5 rounded-lg transition-colors flex items-center justify-center cursor-pointer h-8 sm:h-7 focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:outline-hidden"
+                  title={lang === "es" ? "Agregar medicamento" : "Add Medicine"}
+                  aria-label={lang === "es" ? "Agregar medicamento" : "Add Medicine"}
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -785,7 +789,9 @@ export default function TrackingForm({
                       <button
                         type="button"
                         onClick={() => removeTask(task.id)}
-                        className="text-slate-300 hover:text-red-500 p-1 transition-colors cursor-pointer"
+                        className="text-slate-300 hover:text-red-500 p-1 transition-colors cursor-pointer rounded-md focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:outline-hidden"
+                        title={lang === "es" ? "Eliminar tarea" : "Remove task"}
+                        aria-label={lang === "es" ? `Eliminar tarea ${task.name}` : `Remove task ${task.name}`}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -806,8 +812,9 @@ export default function TrackingForm({
                 <button
                   type="button"
                   onClick={handleAddTask}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white p-1.5 rounded-lg transition-colors flex items-center justify-center cursor-pointer"
-                  title="Add Task"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white p-1.5 rounded-lg transition-colors flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-hidden"
+                  title={lang === "es" ? "Agregar tarea" : "Add Task"}
+                  aria-label={lang === "es" ? "Agregar tarea" : "Add Task"}
                 >
                   <Plus className="w-4 h-4" />
                 </button>

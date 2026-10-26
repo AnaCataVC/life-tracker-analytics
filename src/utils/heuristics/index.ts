@@ -1,4 +1,4 @@
-import { LogEntry, WellBeingInsights, EnabledTrackers, IndividualFactorImpact } from "../../types";
+import { LogEntry, WellBeingInsights, EnabledTrackers, IndividualFactorImpact, RollingTrend, LaggedImpact } from "../../types";
 import { getTotalSleep } from "../helpers";
 import { mean } from "./statistics";
 
@@ -6,6 +6,14 @@ import { generateCorrelations } from "./correlations";
 import { calculateIndividualImpacts } from "./individualImpacts";
 import { generateActionableInsights } from "./actionable";
 import { generateScoringAndSummary } from "./scoring";
+import { calculateCalendarRollingTrends, calculateLaggedHabitImpacts } from "./timeSeries";
+
+export * from "./statistics";
+export * from "./timeSeries";
+export * from "./correlations";
+export * from "./individualImpacts";
+export * from "./actionable";
+export * from "./scoring";
 
 /**
  * Calculates offline statistical insights from log history without any AI API calls.
@@ -31,7 +39,9 @@ export function calculateLocalInsights(
       correlations: [],
       actionableInsights: [],
       positives: [],
-      warnings: []
+      warnings: [],
+      rollingTrends: [],
+      laggedImpacts: []
     };
   }
 
@@ -53,6 +63,9 @@ export function calculateLocalInsights(
     lang, avgMood, avgFocus, avgSleepDur, avgSleepQual
   );
 
+  const rollingTrends: RollingTrend[] = calculateCalendarRollingTrends(history, et);
+  const laggedImpacts: LaggedImpact[] = calculateLaggedHabitImpacts(history, et, lang);
+
   return {
     overallSummary,
     wellbeingScore,
@@ -60,6 +73,8 @@ export function calculateLocalInsights(
     actionableInsights,
     positives,
     warnings,
-    individualImpacts
+    individualImpacts,
+    rollingTrends,
+    laggedImpacts
   };
 }

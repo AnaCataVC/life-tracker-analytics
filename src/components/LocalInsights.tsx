@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { LogEntry, EnabledTrackers } from "../types";
 import { calculateLocalInsights } from "../utils/heuristics";
 import { translations } from "../utils/translations";
@@ -18,7 +18,10 @@ import {
   CheckSquare,
   HelpCircle,
   TrendingUp,
-  LineChart
+  LineChart,
+  Calendar,
+  Layers,
+  Pill
 } from "lucide-react";
 
 interface LocalInsightsProps {
@@ -32,8 +35,10 @@ export default function LocalInsights({ history, onCommitHabit, lang, enabledTra
   const t = translations[lang];
   const [calculationTrigger, setCalculationTrigger] = useState<number>(0);
 
-  // Run dynamic heuristics calculations
-  const insights = calculateLocalInsights(history, lang, enabledTrackers);
+  // Memoized dynamic heuristics calculations
+  const insights = useMemo(() => {
+    return calculateLocalInsights(history, lang, enabledTrackers);
+  }, [history, lang, enabledTrackers, calculationTrigger]);
 
   const handleRecalculate = () => {
     // Increment to trigger a visual layout refresh/recalculation animation
@@ -71,13 +76,7 @@ export default function LocalInsights({ history, onCommitHabit, lang, enabledTra
     if (norm.includes("mood") || norm.includes("ánimo") || norm.includes("humor")) return <Smile className="w-3.5 h-3.5 text-amber-500" />;
     if (norm.includes("sleep") || norm.includes("sueño") || norm.includes("rest")) return <Moon className="w-3.5 h-3.5 text-blue-500" />;
     if (norm.includes("focus") || norm.includes("concen") || norm.includes("enfoque")) return <Brain className="w-3.5 h-3.5 text-teal-500" />;
-    if (norm.includes("med") || norm.includes("toma")) return (
-      <span className="text-red-500 shrink-0 inline-flex items-center">
-        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M9 21V15H3V9H9V3H15V9H21V15H15V21H9Z" />
-        </svg>
-      </span>
-    );
+    if (norm.includes("med") || norm.includes("toma")) return <Pill className="w-3.5 h-3.5 text-red-500 shrink-0" />;
     if (norm.includes("rout") || norm.includes("hab") || norm.includes("task") || norm.includes("tarea") || norm.includes("cumpl")) {
       return <CheckSquare className="w-3.5 h-3.5 text-emerald-500" />;
     }
@@ -154,20 +153,20 @@ export default function LocalInsights({ history, onCommitHabit, lang, enabledTra
                     cx="56"
                     cy="56"
                     r="42"
-                    stroke="#6366f1"
+                    stroke="currentColor"
                     strokeWidth="7"
                     fill="transparent"
                     strokeDasharray={263.8}
                     strokeDashoffset={263.8 - (263.8 * insights.wellbeingScore) / 100}
                     strokeLinecap="round"
-                    className="transition-all duration-700 ease-out"
+                    className="text-indigo-500 transition-all duration-700 ease-out"
                   />
                 </svg>
                 <div className="absolute flex flex-col items-center justify-center">
                   <span className="text-2xl font-mono font-bold text-slate-800 dark:text-slate-100">
                     {insights.wellbeingScore}
                   </span>
-                  <span className="text-[8px] font-semibold text-slate-400 dark:text-slate-500">
+                  <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500">
                     / 100
                   </span>
                 </div>
@@ -180,7 +179,7 @@ export default function LocalInsights({ history, onCommitHabit, lang, enabledTra
 
             {/* 2. Narrative summary written by localized analyzer */}
             <div className="bg-linear-to-br from-indigo-50/5 to-amber-50/5 dark:from-indigo-950/20 dark:to-orange-950/5 p-5 rounded-2xl border border-slate-100/80 dark:border-slate-800 space-y-3 flex flex-col justify-center">
-              <h3 className="font-sans font-semibold text-[13px] text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+              <h3 className="font-sans font-semibold text-xs text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                 <Compass className="w-4 h-4 text-indigo-500 dark:text-indigo-400 shrink-0" />
                 {t.summaryTitle}
               </h3>
@@ -190,10 +189,10 @@ export default function LocalInsights({ history, onCommitHabit, lang, enabledTra
             </div>
           </div>
 
-          {/* Bento Mid Row: Calculted Statistical Correlations */}
+          {/* Bento Mid Row: Calculated Statistical Correlations */}
           {insights.correlations.length > 0 && (
             <div className="space-y-3">
-              <h3 className="font-sans font-semibold text-[13px] text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider">
+              <h3 className="font-sans font-semibold text-xs text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider">
                 {t.correlationsTitle}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -211,7 +210,7 @@ export default function LocalInsights({ history, onCommitHabit, lang, enabledTra
                           <span className="text-[9px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/45 px-1.5 py-0.5 rounded-md">
                             {corr.categoryA}
                           </span>
-                          <span className="text-[8.5px] text-slate-400">x</span>
+                          <span className="text-[9px] text-slate-400">x</span>
                           <span className="text-[9px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/45 px-1.5 py-0.5 rounded-md">
                             {corr.categoryB}
                           </span>
@@ -219,17 +218,17 @@ export default function LocalInsights({ history, onCommitHabit, lang, enabledTra
 
                         {/* Direction Icon Badges */}
                         {isPositive && (
-                          <span className="text-[8.5px] font-semibold font-mono text-emerald-600 bg-emerald-50 flex items-center gap-0.5 px-2 py-0.5 rounded-full dark:text-emerald-400 dark:bg-emerald-950/30">
+                          <span className="text-[9px] font-semibold font-mono text-emerald-600 bg-emerald-50 flex items-center gap-0.5 px-2 py-0.5 rounded-full dark:text-emerald-400 dark:bg-emerald-950/30">
                             <ArrowUpRight className="w-2.5 h-2.5" /> {t.positive}
                           </span>
                         )}
                         {isNegative && (
-                          <span className="text-[8.5px] font-semibold font-mono text-rose-600 bg-rose-50 flex items-center gap-0.5 px-2 py-0.5 rounded-full dark:text-rose-400 dark:bg-rose-950/30">
+                          <span className="text-[9px] font-semibold font-mono text-rose-600 bg-rose-50 flex items-center gap-0.5 px-2 py-0.5 rounded-full dark:text-rose-400 dark:bg-rose-950/30">
                             <ArrowDownRight className="w-2.5 h-2.5" /> {t.negative}
                           </span>
                         )}
                         {!isPositive && !isNegative && (
-                          <span className="text-[8.5px] font-semibold font-mono text-slate-500 bg-slate-50 flex items-center px-2 py-0.5 rounded-full dark:text-slate-400 dark:bg-slate-800/40">
+                          <span className="text-[9px] font-semibold font-mono text-slate-500 bg-slate-50 flex items-center px-2 py-0.5 rounded-full dark:text-slate-400 dark:bg-slate-800/40">
                             {t.neutral}
                           </span>
                         )}
@@ -244,11 +243,108 @@ export default function LocalInsights({ history, onCommitHabit, lang, enabledTra
             </div>
           )}
 
+          {/* Longitudinal Trends & Personal Baselines (7d vs 28d) */}
+          {insights.rollingTrends && insights.rollingTrends.length > 0 && (
+            <div className="space-y-3">
+              <div className="flex flex-col gap-1">
+                <h3 className="font-sans font-semibold text-xs text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-indigo-500" />
+                  {t.rollingTrendsTitle}
+                </h3>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 font-sans">
+                  {t.rollingTrendsSubtitle}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                {insights.rollingTrends.map((trend, idx) => {
+                  const metricLabel = 
+                    trend.metric === "mood" ? t.categories.moodRating :
+                    trend.metric === "concentration" ? t.categories.focusScore :
+                    trend.metric === "sleepDuration" ? t.categories.sleepDuration :
+                    t.categories.sleepQuality;
+
+                  const isImproving = trend.direction === "improving";
+                  const isDeclining = trend.direction === "declining";
+                  const isStable = trend.direction === "stable";
+
+                  return (
+                    <div 
+                      key={idx} 
+                      className="bg-white dark:bg-slate-950/40 p-3.5 rounded-xl border border-slate-100/80 dark:border-slate-800/80 flex flex-col justify-between gap-2.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                          {trend.metric === "mood" && <Smile className="w-3.5 h-3.5 text-amber-500" />}
+                          {trend.metric === "concentration" && <Brain className="w-3.5 h-3.5 text-teal-500" />}
+                          {trend.metric === "sleepDuration" && <Moon className="w-3.5 h-3.5 text-blue-500" />}
+                          {trend.metric === "sleepQuality" && <Activity className="w-3.5 h-3.5 text-indigo-500" />}
+                          {metricLabel}
+                        </span>
+
+                        {isImproving && (
+                          <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/30 px-2 py-0.5 rounded-full flex items-center gap-0.5">
+                            <ArrowUpRight className="w-2.5 h-2.5" /> {t.trendImproving}
+                          </span>
+                        )}
+                        {isDeclining && (
+                          <span className="text-[9px] font-semibold text-rose-600 bg-rose-50 dark:text-rose-400 dark:bg-rose-950/30 px-2 py-0.5 rounded-full flex items-center gap-0.5">
+                            <ArrowDownRight className="w-2.5 h-2.5" /> {t.trendDeclining}
+                          </span>
+                        )}
+                        {isStable && (
+                          <span className="text-[9px] font-semibold text-slate-500 bg-slate-100 dark:text-slate-400 dark:bg-slate-800/40 px-2 py-0.5 rounded-full">
+                            {t.trendStable}
+                          </span>
+                        )}
+                        {trend.direction === "insufficient_data" && (
+                          <span className="text-[8px] font-medium text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-950/30 px-1.5 py-0.5 rounded-md">
+                            {t.trendInsufficient}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-baseline justify-between pt-1">
+                        <div>
+                          <div className="text-[10px] text-slate-400 dark:text-slate-500 font-sans">
+                            {t.rolling7dLabel}
+                          </div>
+                          <div className="text-base font-bold text-slate-800 dark:text-slate-100 font-mono">
+                            {trend.rolling7dAvg !== null ? `${trend.rolling7dAvg}` : "—"}
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <div className="text-[10px] text-slate-400 dark:text-slate-500 font-sans">
+                            {t.baseline28dLabel}
+                          </div>
+                          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 font-mono">
+                            {trend.baseline28dAvg !== null ? `${trend.baseline28dAvg}` : "—"}
+                            {trend.delta !== null && (
+                              <span className={`ml-1 text-[10px] ${trend.delta >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
+                                ({trend.delta >= 0 ? `+${trend.delta}` : `${trend.delta}`})
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="text-[9px] text-slate-400 dark:text-slate-500 pt-1 border-t border-slate-100 dark:border-slate-800/60 flex justify-between">
+                        <span>7d: {trend.count7d} / 7</span>
+                        <span>28d: {trend.count28d} / 28</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Individual Factor Impact Analysis Block */}
           {insights.individualImpacts && insights.individualImpacts.length > 0 && (
             <div className="space-y-3">
               <div className="flex flex-col gap-1">
-                <h3 className="font-sans font-semibold text-[13px] text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider">
+                <h3 className="font-sans font-semibold text-xs text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider">
                   {lang === "es" ? "Impacto Individual de Hábitos y Medicamentos" : "Individual Habit & Medication Impact"}
                 </h3>
                 <p className="text-[11px] text-slate-400 dark:text-slate-500 font-sans">
@@ -378,9 +474,81 @@ export default function LocalInsights({ history, onCommitHabit, lang, enabledTra
             </div>
           )}
 
+          {/* Lagged Habit & Sleep Relationships (Lag-1) */}
+          {insights.laggedImpacts && insights.laggedImpacts.length > 0 && (
+            <div className="space-y-3">
+              <div className="flex flex-col gap-1">
+                <h3 className="font-sans font-semibold text-[13px] text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-purple-500" />
+                  {t.laggedImpactsTitle}
+                </h3>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 font-sans">
+                  {t.laggedImpactsSubtitle}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {insights.laggedImpacts.map((lag, idx) => {
+                  const confidenceBadge = 
+                    lag.confidence === "high" ? t.confidenceHigh :
+                    lag.confidence === "moderate" ? t.confidenceModerate :
+                    t.confidenceLow;
+                  
+                  const confColor =
+                    lag.confidence === "high" ? "text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-indigo-950/30" :
+                    "text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-950/30";
+
+                  const targetLabel = 
+                    lag.targetMetric === "sleepQuality" ? t.categories.sleepQuality :
+                    lag.targetMetric === "sleepDuration" ? t.categories.sleepDuration :
+                    t.categories.focusScore;
+
+                  return (
+                    <div
+                      key={idx}
+                      className="bg-white dark:bg-slate-950/40 p-4 rounded-xl border border-slate-100/80 dark:border-slate-800/80 flex flex-col justify-between gap-3 hover:shadow-xs transition-all"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                            {lag.factorName} (t-1)
+                          </span>
+                          <span className="text-[10px] text-slate-400">→</span>
+                          <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded-md">
+                            {targetLabel} (t)
+                          </span>
+                        </div>
+
+                        <span className={`text-[9px] font-semibold px-2 py-0.5 rounded-full ${confColor}`}>
+                          {confidenceBadge}
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-slate-600 dark:text-slate-300 font-sans leading-relaxed">
+                        {lag.description}
+                      </p>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800/60 text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                        <div>
+                          <span>{lang === "es" ? "Con hábito ayer: " : "With habit yesterday: "}</span>
+                          <strong className="text-slate-700 dark:text-slate-200">{lag.avgWithPreviousDay}</strong>
+                          <span className="text-slate-400"> vs </span>
+                          <strong className="text-slate-700 dark:text-slate-200">{lag.avgWithoutPreviousDay}</strong>
+                        </div>
+                        <div className="text-[9px] text-slate-400">
+                          {lag.consecutivePairsCount} {t.consecutivePairsLabel}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Bento Bottom Row: Actionable Habits */}
           <div className="space-y-3">
-            <h3 className="font-sans font-semibold text-[13px] text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider">
+            <h3 className="font-sans font-semibold text-xs text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider">
               {t.actionableHabitsTitle}
             </h3>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

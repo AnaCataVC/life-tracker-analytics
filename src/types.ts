@@ -67,6 +67,29 @@ export interface IndividualFactorImpact {
   confidence: ConfidenceLevel;
 }
 
+export interface RollingTrend {
+  metric: "mood" | "concentration" | "sleepDuration" | "sleepQuality";
+  rolling7dAvg: number | null;
+  baseline28dAvg: number | null;
+  delta: number | null;
+  zScore: number | null;
+  direction: "improving" | "declining" | "stable" | "insufficient_data";
+  count7d: number;
+  count28d: number;
+}
+
+export interface LaggedImpact {
+  factorName: string;
+  factorType: "habit" | "medication";
+  targetMetric: "sleepDuration" | "sleepQuality" | "mood" | "concentration";
+  avgWithPreviousDay: number;
+  avgWithoutPreviousDay: number;
+  difference: number;
+  confidence: ConfidenceLevel;
+  consecutivePairsCount: number;
+  description: string;
+}
+
 export interface WellBeingInsights {
   overallSummary: string;
   wellbeingScore: number;
@@ -75,6 +98,8 @@ export interface WellBeingInsights {
   positives: string[];
   warnings: string[];
   individualImpacts?: IndividualFactorImpact[];
+  rollingTrends?: RollingTrend[];
+  laggedImpacts?: LaggedImpact[];
 }
 
 export interface UserMetadata {
